@@ -20,7 +20,7 @@ dayjs.locale("en-au");
 /**
  * 달력과 일별 기록을 보여주는 메인 캘린더 화면 컴포넌트입니다.
  */
-export default function CalendarScreen(): JSX.Element {
+export default function CalendarScreen() {
   // --- Hooks & State 정의 ---
   const router = useRouter();
   const [refreshId, setRefreshId] = React.useState(0);
