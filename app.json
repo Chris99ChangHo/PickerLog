@@ -5,11 +5,11 @@
     "scheme": "pickerlog",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/PickerLog-Icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/PickerLog-Splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#50D94D"       
     },
@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/PickerLog-Icon.png",
+        "backgroundColor": "#50D94D"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
