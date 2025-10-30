@@ -1,7 +1,8 @@
 // app/(tabs)/entry.tsx
 
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { View, Text, TextInput, ScrollView, Pressable, Platform, SafeAreaView } from "react-native";
+import { View, Text, TextInput, ScrollView, Pressable, Platform } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from "expo-router"; 
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";

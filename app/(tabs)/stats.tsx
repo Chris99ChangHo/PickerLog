@@ -217,22 +217,17 @@ export default function StatsScreen() {
             </View>
             <View style={styles.legendGrid}>
               {(() => {
-                const total = berrySlices.reduce((sum, s) => sum + s.y, 0);
-                return berrySlices.map((s, i) => {
-                  const pct = total > 0 ? Math.round((s.y / total) * 100) : 0;
-                  return (
-                    <View key={`${s.x}-${i}`} style={styles.legendItem}>
-                      <View style={styles.legendLeft}>
-                        <View style={[styles.legendSwatch, { backgroundColor: piePalette[i % piePalette.length] }]} />
-                        <Text style={styles.legendText} numberOfLines={1}>{s.x}</Text>
-                      </View>
-                      <View style={styles.legendRight}>
-                        <Text style={styles.legendValueStrong}>${s.y.toFixed(2)}</Text>
-                        <Text style={styles.legendValuePct}>{pct}%</Text>
-                      </View>
+                return berrySlices.map((s, i) => (
+                  <View key={`${s.x}-${i}`} style={styles.legendItem}>
+                    <View style={styles.legendLeft}>
+                      <View style={[styles.legendSwatch, { backgroundColor: piePalette[i % piePalette.length] }]} />
+                      <Text style={styles.legendText} numberOfLines={1}>{s.x}</Text>
                     </View>
-                  );
-                });
+                    <View style={styles.legendRight}>
+                      <Text style={styles.legendValueStrong}>${s.y.toFixed(2)}</Text>
+                    </View>
+                  </View>
+                ));
               })()}
             </View>
           </View>
@@ -299,19 +294,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 13,
   },
-  legendRight: {
-    alignItems: 'flex-end',
-  },
+  legendRight: { alignItems: 'flex-end' },
   legendValueStrong: {
     color: colors.text,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
-  },
-  legendValuePct: {
-    color: colors.sub,
-    fontSize: 12,
-    lineHeight: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
