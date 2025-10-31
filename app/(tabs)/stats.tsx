@@ -15,6 +15,7 @@ import { computePayV2 } from "../../src/domain";
 import { Card } from "../../src/ui/components";
 import { Button } from '../../src/ui/Button';
 import { colors } from "../../src/ui/theme";
+import { formatCurrencyAUD } from "../../src/ui/format";
 
 // dayjs 설정
 dayjs.extend(isoWeek);
@@ -50,6 +51,7 @@ const formatWeekLabelAU2 = (isoYear: number, isoWeekNum: number): string => {
 export default function StatsScreen() {
   const [allEntries, setAllEntries] = useState<LogEntry[]>([]);
   const [period, setPeriod] = useState<Period>('monthly');
+  const [legendExpanded, setLegendExpanded] = useState<boolean>(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -180,8 +182,8 @@ export default function StatsScreen() {
       <View style={styles.itemContainer}>
         <Text style={styles.periodLabel}>{item.periodLabel}</Text>
         <View>
-          <Text style={styles.amountText}>Net: ${item.net.toFixed(2)}</Text>
-          <Text style={styles.amountSubText}>Gross: ${item.gross.toFixed(2)}</Text>
+          <Text style={styles.amountText}>Net: {formatCurrencyAUD(item.net)}</Text>
+          <Text style={styles.amountSubText}>Gross: {formatCurrencyAUD(item.gross)}</Text>
         </View>
       </View>
     </Card>
@@ -217,17 +219,29 @@ export default function StatsScreen() {
             </View>
             <View style={styles.legendGrid}>
               {(() => {
-                return berrySlices.map((s, i) => (
+                const shown = legendExpanded ? berrySlices : berrySlices.slice(0, 4);
+                const hidden = Math.max(0, berrySlices.length - shown.length);
+                return shown.map((s, i) => (
                   <View key={`${s.x}-${i}`} style={styles.legendItem}>
                     <View style={styles.legendLeft}>
                       <View style={[styles.legendSwatch, { backgroundColor: piePalette[i % piePalette.length] }]} />
                       <Text style={styles.legendText} numberOfLines={1}>{s.x}</Text>
                     </View>
                     <View style={styles.legendRight}>
-                      <Text style={styles.legendValueStrong}>${s.y.toFixed(2)}</Text>
+                      <Text style={styles.legendValueStrong}>{formatCurrencyAUD(s.y)}</Text>
                     </View>
                   </View>
-                ));
+                )).concat(
+                  hidden > 0
+                    ? [
+                        <View key="legend-more" style={styles.legendMoreRow}>
+                          <Text style={styles.legendMoreText} onPress={() => setLegendExpanded(true)}>
+                            Show all (+{hidden})
+                          </Text>
+                        </View>
+                      ]
+                    : []
+                );
               })()}
             </View>
           </View>
@@ -300,6 +314,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
+  },
+  legendMoreRow: {
+    width: '100%',
+    paddingHorizontal: 6,
+    marginTop: 4,
+  },
+  legendMoreText: {
+    color: colors.brand600,
+    fontSize: 13,
+    fontWeight: '700',
   },
   buttonContainer: {
     flexDirection: 'row',

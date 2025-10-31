@@ -10,19 +10,27 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/PickerLog-Splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#50D94D"       
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.pickerlog",
+      "versionCode": 1,
+      "splash": {
+        "image": "./assets/PickerLog-Splash.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#50D94D"
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/PickerLog-Icon.png",
         "backgroundColor": "#50D94D"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.PickerLog"
     },
     "web": {
       "favicon": "./assets/favicon.png"

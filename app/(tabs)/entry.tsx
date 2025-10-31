@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { computePayV2, type PayType, type PieceUnit } from "../../src/domain";
+import { formatCurrencyAUD } from "../../src/ui/format";
 import { upsert, loadAll, type LogEntry } from "../../src/storage"; 
 import { Picker } from "@react-native-picker/picker";
 import { Card, Field, H1, SolidCard } from "../../src/ui/components"; 
@@ -123,7 +124,7 @@ export default function EntryScreen() {
           <SolidCard style={{ marginTop: 12 }}>
             <Text style={{ color: "#fff", fontWeight: "700", marginBottom: 8 }}>Preview</Text>
             <Text style={{ color: "#fff" }}>
-              Gross: ${preview.gross.toFixed(2)} | Tax: ${preview.taxAmount.toFixed(2)} | Net: ${preview.net.toFixed(2)}
+              Gross: {formatCurrencyAUD(preview.gross)} | Tax: {formatCurrencyAUD(preview.taxAmount)} | Net: {formatCurrencyAUD(preview.net)}
             </Text>
           </SolidCard>
         )}
