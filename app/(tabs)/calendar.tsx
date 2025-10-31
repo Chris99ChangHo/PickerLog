@@ -148,10 +148,10 @@ export default function CalendarScreen() {
               >
                 <Card>
                   <Text style={styles.itemTitle}>
-                    {e.berryType} ??Net ${r.net.toFixed(2)}
+                    {e.berryType} · Net {formatCurrencyAUD(r.net)}
                   </Text>
                   <Text style={styles.itemSubtitle}>
-                    {subtitle} | Tax {e.taxPercent}%
+                    {subtitle.replace('×','x')} | Tax {e.taxPercent}%
                   </Text>
                   {!!e.comment && (
                     <Text style={styles.itemComment}>{e.comment}</Text>
