@@ -13,7 +13,7 @@ export const colors = {
 export const radius = { sm: 10, md: 14, lg: 18, xl: 24 };
 export const spacing = { xs: 6, sm: 10, md: 14, lg: 20, xl: 28 };
 export const type = {
-  h1: { fontSize: 22, fontWeight: "700" as const },
-  body: { fontSize: 16 },
-  label: { fontSize: 13, color: "#666" },
+  h1: { fontSize: 22, fontWeight: "700" as const, fontFamily: "Inter_700Bold" },
+  body: { fontSize: 16, fontFamily: "Inter_400Regular" },
+  label: { fontSize: 13, color: "#666", fontFamily: "Inter_600SemiBold" },
 };

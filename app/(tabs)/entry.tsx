@@ -47,6 +47,7 @@ export default function EntryScreen() {
   const [rate, setRate] = useState("0");
   const [taxMode, setTaxMode] = useState<TaxMode>("whm_15");
   const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!editingId) return;
@@ -98,6 +99,8 @@ export default function EntryScreen() {
   };
 
   const save = useCallback(async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       const entry: LogEntry = {
         id: editingId ?? String(Date.now()),
@@ -121,8 +124,10 @@ export default function EntryScreen() {
     } catch (e) {
       console.error('Failed to save log:', e);
       Toast.show({ type: 'error', text1: 'Save Failed', text2: 'An error occurred. Please try again.', position: 'bottom' });
+    } finally {
+      setSaving(false);
     }
-  }, [editingId, date, berry, payType, rate, taxPercent, pieceUnit, kg, punnets, hours, comment, router]);
+  }, [saving, editingId, date, berry, payType, rate, taxPercent, pieceUnit, kg, punnets, hours, comment, router]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -263,7 +268,7 @@ export default function EntryScreen() {
         )}
 
         <View style={{ marginTop: 16 }}>
-          <Button title="Save log" onPress={save} />
+          <Button title={saving ? "Saving..." : "Save log"} onPress={save} disabled={saving} />
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -2,7 +2,7 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
-import { View, Text, FlatList, Pressable, Alert, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar, DateData } from "react-native-calendars";
 import dayjs from "dayjs";
@@ -13,7 +13,9 @@ import { computePayV2 } from "../../src/domain";
 import { groupByDay, makeMarkedDates } from "../../src/calendarHelpers";
 import { Card, SolidCard } from "../../src/ui/components";
 import { colors } from "../../src/ui/theme";
+import { formatCurrencyAUD } from "../../src/ui/format";
 
+import { confirmAsync } from "../../src/ui/confirm";
 // ???쒖떆 濡쒖??쇱? en-AU濡?????щ㎎? 湲곗〈 ISO ?좎?)
 dayjs.locale("en-au");
 
@@ -74,19 +76,12 @@ export default function CalendarScreen() {
     setSelected(day.dateString);
   }, []);
 
-  const confirmDelete = (id: string) => {
-    Alert.alert("Delete Log", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await remove(id);
-          setAll(prevAll => prevAll.filter(entry => entry.id !== id));
-        }
-      },
-    ]);
-  };
+  const confirmDelete = async (id: string) => {
+  const ok = await confirmAsync("Delete Log", "Are you sure?");
+  if (!ok) return;
+  await remove(id);
+  setAll(prevAll => prevAll.filter(entry => entry.id !== id));
+};
 
   // --- UI ?뚮뜑留?---
   return (
@@ -118,7 +113,7 @@ export default function CalendarScreen() {
               {dayjs(selected).format("D/MM/YYYY")}
             </Text>
             <Text style={styles.headerTotals}>
-              Gross: ${totals.gross.toFixed(2)} | Tax: ${totals.tax.toFixed(2)} | Net: ${totals.net.toFixed(2)}
+              Gross: {formatCurrencyAUD(totals.gross)} | Tax: {formatCurrencyAUD(totals.tax)} | Net: {formatCurrencyAUD(totals.net)}
             </Text>
             {itemsToday.length === 0 && (
               <Text style={styles.headerEmpty}>No entries for this day.</Text>
@@ -166,7 +161,7 @@ export default function CalendarScreen() {
 
               {/* ??젣 踰꾪듉 */}
               <Pressable onPress={() => confirmDelete(e.id)} style={styles.deleteButton}>
-                <Text style={styles.deleteButtonText}>Delete</Text>
+                <Text style={styles.deleteButtonText}>×</Text>
               </Pressable>
             </View>
           );
@@ -233,5 +228,8 @@ const styles = StyleSheet.create({
     color: colors.sub,
   },
 });
+
+
+
 
 
