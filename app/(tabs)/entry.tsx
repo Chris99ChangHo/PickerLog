@@ -260,8 +260,8 @@ export default function EntryScreen() {
 
         {preview && (
           <SolidCard style={{ marginTop: 12 }}>
-            <Text style={{ color: '#fff', fontWeight: '700', marginBottom: 8 }}>Preview</Text>
-            <Text style={{ color: '#fff' }}>
+            <Text style={{ color: '#fff', fontWeight: '700', fontFamily: 'Inter_700Bold', marginBottom: 8 }}>Preview</Text>
+            <Text style={{ color: '#fff', fontFamily: 'Inter_400Regular' }}>
               Gross: {formatCurrencyAUD(preview.gross)} | Tax: {formatCurrencyAUD(preview.taxAmount)} | Net: {formatCurrencyAUD(preview.net)}
             </Text>
           </SolidCard>

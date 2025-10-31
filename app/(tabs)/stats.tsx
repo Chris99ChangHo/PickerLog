@@ -272,6 +272,7 @@ const styles = StyleSheet.create({
   pieTitle: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: colors.text,
     marginBottom: 8,
   },
@@ -307,12 +308,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: colors.text,
     fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
   },
   legendRight: { alignItems: 'flex-end' },
   legendValueStrong: {
     color: colors.text,
     fontSize: 14,
     fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     lineHeight: 18,
   },
   legendMoreRow: {
@@ -343,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   periodLabel: { fontSize: 16, fontWeight: '600', color: colors.text, flex: 1 },
-  amountText: { fontSize: 16, fontWeight: '700', textAlign: 'right', color: colors.text },
-  amountSubText: { fontSize: 12, color: colors.sub, textAlign: 'right' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: colors.sub }
+  amountText: { fontSize: 16, fontWeight: '700', fontFamily: 'Inter_700Bold', textAlign: 'right', color: colors.text },
+  amountSubText: { fontSize: 12, color: colors.sub, textAlign: 'right', fontFamily: 'Inter_400Regular' },
+  emptyText: { textAlign: 'center', marginTop: 50, color: colors.sub, fontFamily: 'Inter_400Regular' }
 });

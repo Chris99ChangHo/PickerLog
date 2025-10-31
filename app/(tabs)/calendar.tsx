@@ -190,14 +190,17 @@ const styles = StyleSheet.create({
   headerDate: {
     color: "#fff",
     fontWeight: "700",
+    fontFamily: 'Inter_700Bold',
     marginBottom: 8,
   },
   headerTotals: {
     color: "#fff",
+    fontFamily: 'Inter_400Regular',
   },
   headerEmpty: {
     color: "#fff",
     opacity: 0.85,
+    fontFamily: 'Inter_400Regular',
     marginTop: 6,
   },
   itemRow: {
@@ -206,26 +209,33 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deleteButton: {
-    padding: 10,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#FFDDDD",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteButtonText: {
     color: "#CC0000",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
   },
   itemTitle: {
     fontWeight: "700",
     marginBottom: 6,
     color: colors.text,
+    fontFamily: 'Inter_700Bold',
   },
   itemSubtitle: {
     color: colors.sub,
+    fontFamily: 'Inter_400Regular',
   },
   itemComment: {
     marginTop: 6,
     color: colors.sub,
+    fontFamily: 'Inter_400Regular',
   },
 });
 

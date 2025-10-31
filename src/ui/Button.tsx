@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
   },
   solid: {
     backgroundColor: colors.brand,
