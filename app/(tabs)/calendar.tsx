@@ -1,4 +1,4 @@
-// app/(tabs)/calendar.tsx
+﻿// app/(tabs)/calendar.tsx
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
@@ -14,14 +14,14 @@ import { groupByDay, makeMarkedDates } from "../../src/calendarHelpers";
 import { Card, SolidCard } from "../../src/ui/components";
 import { colors } from "../../src/ui/theme";
 
-// ✅ 표시 로케일은 en-AU로(저장 포맷은 기존 ISO 유지)
+// ???쒖떆 濡쒖??쇱? en-AU濡?????щ㎎? 湲곗〈 ISO ?좎?)
 dayjs.locale("en-au");
 
 /**
- * 달력과 일별 기록을 보여주는 메인 캘린더 화면 컴포넌트입니다.
+ * ?щ젰怨??쇰퀎 湲곕줉??蹂댁뿬二쇰뒗 硫붿씤 罹섎┛???붾㈃ 而댄룷?뚰듃?낅땲??
  */
 export default function CalendarScreen() {
-  // --- Hooks & State 정의 ---
+  // --- Hooks & State ?뺤쓽 ---
   const router = useRouter();
   const [refreshId, setRefreshId] = React.useState(0);
   const refreshData = () => setRefreshId(Math.random());
@@ -29,20 +29,20 @@ export default function CalendarScreen() {
   const [all, setAll] = React.useState<LogEntry[]>([]);
   const [selected, setSelected] = React.useState<string>(dayjs().format("YYYY-MM-DD"));
 
-  // ✅ marked 계산을 useMemo로 (불필요한 state 제거)
+  // ??marked 怨꾩궛??useMemo濡?(遺덊븘?뷀븳 state ?쒓굅)
   const marked = React.useMemo(
     () => makeMarkedDates(groupByDay(all), selected),
     [all, selected]
   );
 
-  // --- 데이터 로딩 ---
+  // --- ?곗씠??濡쒕뵫 ---
   useFocusEffect(
     React.useCallback(() => {
       loadAll().then(setAll);
     }, [refreshId])
   );
 
-  // --- 파생 데이터 ---
+  // --- ?뚯깮 ?곗씠??---
   const itemsToday = React.useMemo(
     () => all.filter(e => e.date === selected),
     [all, selected]
@@ -68,9 +68,9 @@ export default function CalendarScreen() {
     return { gross, tax, net };
   }, [itemsToday]);
 
-  // --- 이벤트 핸들러 ---
+  // --- ?대깽???몃뱾??---
   const onDayPress = React.useCallback((day: DateData) => {
-    // 저장 포맷은 ISO "YYYY-MM-DD" 유지
+    // ????щ㎎? ISO "YYYY-MM-DD" ?좎?
     setSelected(day.dateString);
   }, []);
 
@@ -88,7 +88,7 @@ export default function CalendarScreen() {
     ]);
   };
 
-  // --- UI 렌더링 ---
+  // --- UI ?뚮뜑留?---
   return (
     <SafeAreaView style={styles.safeArea}>
       <Calendar
@@ -113,7 +113,7 @@ export default function CalendarScreen() {
         keyExtractor={(e) => e.id}
         ListHeaderComponent={() => (
           <SolidCard>
-            {/* ✅ 표시만 en-AU: "D/MM/YYYY" (예: 31/12/2025) */}
+            {/* ???쒖떆留?en-AU: "D/MM/YYYY" (?? 31/12/2025) */}
             <Text style={styles.headerDate}>
               {dayjs(selected).format("D/MM/YYYY")}
             </Text>
@@ -140,20 +140,20 @@ export default function CalendarScreen() {
           const subtitle =
             e.payType === "piece"
               ? (e.pieceUnit === "punnet"
-                  ? `punnets ${e.punnets ?? 0} × $${e.rate}/p`
-                  : `kg ${e.kg ?? 0} × $${e.rate}/kg`)
-              : `hours ${e.hours ?? 0} × $${e.rate}/h`;
+                  ? `punnets ${e.punnets ?? 0} 횞 $${e.rate}/p`
+                  : `kg ${e.kg ?? 0} 횞 $${e.rate}/kg`)
+              : `hours ${e.hours ?? 0} 횞 $${e.rate}/h`;
 
           return (
             <View style={styles.itemRow}>
-              {/* 항목 수정 화면으로 이동 */}
+              {/* ??ぉ ?섏젙 ?붾㈃?쇰줈 ?대룞 */}
               <Pressable
                 style={{ flex: 1 }}
                 onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
               >
                 <Card>
                   <Text style={styles.itemTitle}>
-                    {e.berryType} — Net ${r.net.toFixed(2)}
+                    {e.berryType} ??Net ${r.net.toFixed(2)}
                   </Text>
                   <Text style={styles.itemSubtitle}>
                     {subtitle} | Tax {e.taxPercent}%
@@ -164,9 +164,9 @@ export default function CalendarScreen() {
                 </Card>
               </Pressable>
 
-              {/* 삭제 버튼 */}
+              {/* ??젣 踰꾪듉 */}
               <Pressable onPress={() => confirmDelete(e.id)} style={styles.deleteButton}>
-                <Text style={styles.deleteButtonText}>✕</Text>
+                <Text style={styles.deleteButtonText}>Delete</Text>
               </Pressable>
             </View>
           );
@@ -176,7 +176,7 @@ export default function CalendarScreen() {
   );
 }
 
-// ✅ 스타일
+// ???ㅽ???
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -233,3 +233,5 @@ const styles = StyleSheet.create({
     color: colors.sub,
   },
 });
+
+
