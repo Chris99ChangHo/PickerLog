@@ -3,6 +3,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar, DateData } from "react-native-calendars";
 import dayjs from "dayjs";
@@ -153,9 +154,19 @@ export default function CalendarScreen() {
                     <Text style={styles.itemTitle}>
                       {e.berryType} - Net {formatCurrencyAUD(r.net)}
                     </Text>
-                    <Text style={styles.itemSubtitle}>
-                      {subtitle} | Tax {e.taxPercent}%
-                    </Text>
+                    <View style={styles.subtitleRow}>
+                      <Text style={styles.mono}>
+                        {e.payType === 'piece'
+                          ? (e.pieceUnit === 'punnet' ? `punnets ${e.punnets ?? 0}` : `kg ${e.kg ?? 0}`)
+                          : `hours ${e.hours ?? 0}`}
+                      </Text>
+                      <MaterialCommunityIcons name="close" size={12} style={styles.opIcon} accessibilityLabel="times" />
+                      <Text style={styles.mono}>
+                        {`${formatCurrencyAUD(e.rate)}/${e.payType === 'piece' ? (e.pieceUnit === 'punnet' ? 'p' : 'kg') : 'h'}`}
+                      </Text>
+                      <View style={styles.dotSep} />
+                      <Text style={styles.subtle}>Tax {e.taxPercent}%</Text>
+                    </View>
                     {!!e.comment && (
                       <Text style={styles.itemComment}>{e.comment}</Text>
                     )}
@@ -163,8 +174,14 @@ export default function CalendarScreen() {
                 </Pressable>
 
                 {/* 삭제 버튼 */}
-                <Pressable onPress={() => confirmDelete(e.id)} style={styles.deleteButton}>
-                  <Text style={styles.deleteButtonText}>x</Text>
+                <Pressable
+                  onPress={() => confirmDelete(e.id)}
+                  style={styles.deleteButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete entry"
+                >
+                  <MaterialCommunityIcons name="trash-can-outline" size={20} color="#CC0000" />
                 </Pressable>
               </View>
             );
@@ -212,11 +229,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  subtitleRow: {
+    marginTop: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  mono: {
+    fontFamily: 'Inter_400Regular',
+    color: colors.sub,
+    includeFontPadding: false,
+  },
+  opIcon: {
+    marginHorizontal: 2,
+    color: colors.sub,
+  },
+  dotSep: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.sub,
+    opacity: 0.6,
+    marginHorizontal: 4,
+  },
+  subtle: {
+    fontFamily: 'Inter_400Regular',
+    color: colors.sub,
+    opacity: 0.9,
+  },
   deleteButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#FFDDDD",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFEBEB",
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -228,7 +274,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 6,  
     color: colors.text,
     fontFamily: 'Inter_700Bold',
   },
