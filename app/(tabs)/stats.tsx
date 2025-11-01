@@ -15,6 +15,7 @@ import { computePayV2 } from "../../src/domain";
 import { Card } from "../../src/ui/components";
 import { Button } from '../../src/ui/Button';
 import { colors } from "../../src/ui/theme";
+import { FadeOnFocus } from "../../src/ui/animations";
 import { formatCurrencyAUD } from "../../src/ui/format";
 
 // dayjs 설정
@@ -191,6 +192,7 @@ export default function StatsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <FadeOnFocus>
       {/* 월간/주간 선택 */}
       <View style={styles.buttonContainer}>
         <Button title="Monthly" onPress={() => setPeriod('monthly')} disabled={period === 'monthly'} />
@@ -256,6 +258,7 @@ export default function StatsScreen() {
         keyExtractor={(item) => item.sortKey}
         ListEmptyComponent={<Text style={styles.emptyText}>No data to display.</Text>}
       />
+      </FadeOnFocus>
     </SafeAreaView>
   );
 }

@@ -13,6 +13,7 @@ import { Picker } from "@react-native-picker/picker";
 import { Card, Field, H1, SolidCard } from "../../src/ui/components"; 
 import { Button } from '../../src/ui/Button'; 
 import { colors } from '../../src/ui/theme';
+import { FadeOnFocus } from "../../src/ui/animations";
 import Toast from 'react-native-toast-message';
 
 // UI helper constants
@@ -131,6 +132,7 @@ export default function EntryScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <FadeOnFocus>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
         <Card>
           <H1>{editingId ? 'Edit Log' : 'New Log'}</H1>
@@ -271,6 +273,7 @@ export default function EntryScreen() {
           <Button title={saving ? "Saving..." : "Save log"} onPress={save} disabled={saving} />
         </View>
       </ScrollView>
+      </FadeOnFocus>
     </SafeAreaView>
   );
 }
