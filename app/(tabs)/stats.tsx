@@ -1,8 +1,8 @@
-// app/(tabs)/stats.tsx
+﻿// app/(tabs)/stats.tsx
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useMemo } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Animated, Easing, Image as RNImage } from "react-native";
 import DonutChart from "../../src/ui/DonutChart";
 import { useFocusEffect } from "expo-router";
 import dayjs from "dayjs";
@@ -37,28 +37,61 @@ interface StatRow {
 const formatWeekLabelAU = (isoYear: number, isoWeekNum: number): string => {
   const start = dayjs().year(isoYear).isoWeek(isoWeekNum).startOf('isoWeek');
   const end = dayjs().year(isoYear).isoWeek(isoWeekNum).endOf('isoWeek');
-  return `${start.format('D/MM')}–${end.format('D/MM/YYYY')}`;
+  return ` - `;
 };
 
 // Improved weekly label for display: "D–D MMM YYYY" or "D MMM–D MMM YYYY"
 const formatWeekLabelAU2 = (isoYear: number, isoWeekNum: number): string => {
   const start = dayjs().year(isoYear).isoWeek(isoWeekNum).startOf('isoWeek');
   const end = dayjs().year(isoYear).isoWeek(isoWeekNum).endOf('isoWeek');
+  
   const sameMonth = start.month() === end.month();
-  if (sameMonth) return `${start.format('D')}–${end.format('D MMM YYYY')}`;
-  return `${start.format('D MMM')}–${end.format('D MMM YYYY')}`;
+
+  if (sameMonth) {
+    // 예: "20–26 Oct 2025"
+    return `${start.format('D')}–${end.format('D MMM YYYY')}`;
+  } else {
+    // 예: "27 Oct – 2 Nov 2025"
+    return `${start.format('D MMM')} – ${end.format('D MMM YYYY')}`;
+  }
 };
 
 export default function StatsScreen() {
   const [allEntries, setAllEntries] = useState<LogEntry[]>([]);
   const [period, setPeriod] = useState<Period>('monthly');
   const [legendExpanded, setLegendExpanded] = useState<boolean>(false);
+  // Pie animation value
+  const pieAnim = React.useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
     React.useCallback(() => {
       loadAll().then(setAllEntries);
     }, [])
   );
+
+  const pieAnimStyle = {
+    opacity: pieAnim,
+    transform: [{
+      scale: pieAnim.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) as any,
+    }],
+  } as const;
+
+  // Count-up helper
+  const CountUpText: React.FC<{ value: number; format?: (n:number)=>string; duration?: number; style?: any; }> = ({ value, format=(n)=>String(n.toFixed(2)), duration=600, style }) => {
+    const anim = React.useRef(new Animated.Value(0)).current;
+    const last = React.useRef(0);
+    const [display, setDisplay] = React.useState(format(0));
+    React.useEffect(() => {
+      anim.setValue(0);
+      Animated.timing(anim, { toValue: 1, duration, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
+      last.current = value;
+    }, [value]);
+    React.useEffect(() => {
+      const id = anim.addListener(({ value: t }) => setDisplay(format((t as number) * last.current)));
+      return () => anim.removeListener(id);
+    }, []);
+    return <Text style={style}>{display}</Text>;
+  };
 
   const statsData = useMemo<StatRow[]>(() => {
     // 누적 버킷 (키는 계산/정렬용)
@@ -131,6 +164,16 @@ export default function StatsScreen() {
   // Pie(도넛) 차트: 현재 선택된 기간(가장 최신 버킷)의 베리별(net) 비중
   type Slice = { x: string; y: number };
   const currentPeriodKey = statsData[0]?.sortKey;
+  // Animate donut when period/bucket changes
+  React.useEffect(() => {
+    pieAnim.setValue(0);
+    Animated.timing(pieAnim, {
+      toValue: 1,
+      duration: 650,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [pieAnim, period, currentPeriodKey]);
 
   const berrySlices: Slice[] = useMemo(() => {
     if (!currentPeriodKey) return [];
@@ -154,7 +197,7 @@ export default function StatsScreen() {
         rate: e.rate,
         taxPercent: e.taxPercent,
         pieceUnit: e.pieceUnit,
-        quantity: e.payType === 'piece' ? (e.pieceUnit === 'punnet' ? e.punnets : e.kg) : undefined,
+        quantity: e.payType === 'piece' ? (e.pieceUnit === 'punnet' ? e.punnets : (e.pieceUnit === 'bucket' ? (e as any).buckets : e.kg)) : undefined,
         hours: e.hours,
       });
       const key = e.berryType || 'Unknown';
@@ -183,8 +226,18 @@ export default function StatsScreen() {
       <View style={styles.itemContainer}>
         <Text style={styles.periodLabel}>{item.periodLabel}</Text>
         <View>
-          <Text style={styles.amountText}>Net: {formatCurrencyAUD(item.net)}</Text>
-          <Text style={styles.amountSubText}>Gross: {formatCurrencyAUD(item.gross)}</Text>
+          <CountUpText
+            key={`net-${item.sortKey}`}
+            value={item.net}
+            format={(n)=>`Net: ${formatCurrencyAUD(n)}`}
+            style={styles.amountText}
+          />
+          <CountUpText
+            key={`gross-${item.sortKey}`}
+            value={item.gross}
+            format={(n)=>`Gross: ${formatCurrencyAUD(n)}`}
+            style={styles.amountSubText}
+          />
         </View>
       </View>
     </Card>
@@ -193,10 +246,13 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <FadeOnFocus>
+      <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
+        <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+      </View>
       {/* 월간/주간 선택 */}
       <View style={styles.buttonContainer}>
-        <Button title="Monthly" onPress={() => setPeriod('monthly')} disabled={period === 'monthly'} />
-        <Button title="Weekly" onPress={() => setPeriod('weekly')} disabled={period === 'weekly'} />
+        <Button title="Monthly" onPress={() => setPeriod('monthly')} disabled={period === 'monthly'} style={{ paddingVertical: 12, paddingHorizontal: 18, flex: 1 }} />
+        <Button title="Weekly" onPress={() => setPeriod('weekly')} disabled={period === 'weekly'} style={{ paddingVertical: 12, paddingHorizontal: 18, flex: 1 }} />
       </View>
 
       {/* 도넛 차트 카드 (현재 버킷의 베리별 비중) */}
@@ -209,6 +265,7 @@ export default function StatsScreen() {
         ) : (
           <View>
             <View style={styles.pieCenter}>
+              <Animated.View style={pieAnimStyle} key={`pie-${period}-${currentPeriodKey}`}>
               <DonutChart
                 data={berrySlices.map((s, i) => ({ value: s.y, color: piePalette[i % piePalette.length], label: s.x }))}
                 size={200}
@@ -218,6 +275,7 @@ export default function StatsScreen() {
                 labelFontSize={12}
                 labelMinPercent={8}
               />
+              </Animated.View>
             </View>
             <View style={styles.legendGrid}>
               {(() => {
@@ -336,6 +394,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 16,
     paddingBottom: 8,
+    paddingHorizontal: 16,
     gap: 10,
   },
   listContent: {
@@ -353,3 +412,4 @@ const styles = StyleSheet.create({
   amountSubText: { fontSize: 12, color: colors.sub, textAlign: 'right', fontFamily: 'Inter_400Regular' },
   emptyText: { textAlign: 'center', marginTop: 50, color: colors.sub, fontFamily: 'Inter_400Regular' }
 });
+

@@ -2,7 +2,7 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "react-native";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar, DateData } from "react-native-calendars";
@@ -58,8 +58,7 @@ export default function CalendarScreen() {
       const r = computePayV2({
         payType: e.payType,
         pieceUnit: e.pieceUnit ?? "kg",
-        quantity: e.payType === "piece"
-          ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.kg || 0))
+        quantity: e.payType === "piece" ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.pieceUnit === "bucket" ? ((e as any).buckets || 0) : (e.kg || 0)))
           : undefined,
         hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
         rate: e.rate,
@@ -90,6 +89,9 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <FadeOnFocus>
+        <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
+          <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+        </View>
         <Calendar
           markedDates={marked}
           onDayPress={onDayPress}
@@ -128,20 +130,12 @@ export default function CalendarScreen() {
             const r = computePayV2({
               payType: e.payType,
               pieceUnit: e.pieceUnit ?? "kg",
-              quantity: e.payType === "piece"
-                ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.kg || 0))
+              quantity: e.payType === "piece" ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.pieceUnit === "bucket" ? ((e as any).buckets || 0) : (e.kg || 0)))
                 : undefined,
               hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
               rate: e.rate,
               taxPercent: e.taxPercent,
             });
-
-            const subtitle =
-              e.payType === "piece"
-                ? (e.pieceUnit === "punnet"
-                    ? `punnets ${e.punnets ?? 0} 횞 $${e.rate}/p`
-                    : `kg ${e.kg ?? 0} 횞 $${e.rate}/kg`)
-                : `hours ${e.hours ?? 0} 횞 $${e.rate}/h`;
 
             return (
               <View style={styles.itemRow}>
@@ -151,24 +145,22 @@ export default function CalendarScreen() {
                   onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
                 >
                   <Card>
-                    <Text style={styles.itemTitle}>
-                      {e.berryType} - Net {formatCurrencyAUD(r.net)}
-                    </Text>
-                    <View style={styles.subtitleRow}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.itemTitle}>{e.berryType}</Text>
                       <Text style={styles.mono}>
                         {e.payType === 'piece'
-                          ? (e.pieceUnit === 'punnet' ? `punnets ${e.punnets ?? 0}` : `kg ${e.kg ?? 0}`)
-                          : `hours ${e.hours ?? 0}`}
+                          ? (e.pieceUnit === 'punnet' ? `${e.punnets ?? 0} p` : (e.pieceUnit === 'bucket' ? `${(e as any).buckets ?? 0} bucket` : `${e.kg ?? 0} kg`))
+                          : `${e.hours ?? 0} h`}
                       </Text>
-                      <MaterialCommunityIcons name="close" size={12} style={styles.opIcon} accessibilityLabel="times" />
-                      <Text style={styles.mono}>
-                        {`${formatCurrencyAUD(e.rate)}/${e.payType === 'piece' ? (e.pieceUnit === 'punnet' ? 'p' : 'kg') : 'h'}`}
-                      </Text>
-                      <View style={styles.dotSep} />
-                      <Text style={styles.subtle}>Tax {e.taxPercent}%</Text>
                     </View>
+                    <Text style={styles.itemSubtitle}>
+                      Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
+                    </Text>
                     {!!e.comment && (
-                      <Text style={styles.itemComment}>{e.comment}</Text>
+                      <>
+                        <View style={styles.hr} />
+                        <Text style={styles.itemComment}>{e.comment}</Text>
+                      </>
                     )}
                   </Card>
                 </Pressable>
@@ -274,7 +266,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontWeight: "700",
-    marginBottom: 6,  
+    marginBottom: 0,  
     color: colors.text,
     fontFamily: 'Inter_700Bold',
   },
@@ -287,4 +279,11 @@ const styles = StyleSheet.create({
     color: colors.sub,
     fontFamily: 'Inter_400Regular',
   },
+  hr: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginTop: 8,
+    marginBottom: 4,
+  },
 });
+

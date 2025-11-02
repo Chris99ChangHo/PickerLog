@@ -1,9 +1,9 @@
-// src/ui/theme.ts
+﻿// src/ui/theme.ts
 export const colors = {
   brand: "#50D94D",
   brand600: "#3BB33A",
   brandSoft: "#EAFBEA",
-  bg: "#F3FAF3",
+  bg: "#f5fff0",
   card: "#FFFFFF",
   text: "#111111",
   sub: "rgba(0,0,0,0.6)",
@@ -17,3 +17,4 @@ export const type = {
   body: { fontSize: 16, fontFamily: "Inter_400Regular" },
   label: { fontSize: 13, color: "#666", fontFamily: "Inter_600SemiBold" },
 };
+

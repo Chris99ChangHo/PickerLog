@@ -1,11 +1,9 @@
-// src/storage.ts
+﻿// src/storage.ts
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { PayType, PieceUnit } from "./domain";
 
-/** Domain types */
-export type PayType = "piece" | "hourly";
-export type PieceUnit = "kg" | "punnet";
-
+// LogEntry: 앱이 저장하는 단일 로그 레코드
 export interface LogEntry {
   id: string;
   date: string;          // YYYY-MM-DD
@@ -17,6 +15,7 @@ export interface LogEntry {
   pieceUnit?: PieceUnit;
   kg?: number;
   punnets?: number;
+  buckets?: number;
   hours?: number;
 }
 

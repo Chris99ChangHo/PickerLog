@@ -1,34 +1,35 @@
-﻿// app/(tabs)/entry.tsx
+// app/(tabs)/entry.tsx
 
-import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { View, Text, TextInput, ScrollView, Pressable, Platform } from "react-native";
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { View, Text, TextInput, ScrollView, Pressable, Platform, Image as RNImage } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from "expo-router"; 
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import dayjs from "dayjs";
-import { computePayV2, type PayType, type PieceUnit } from "../../src/domain";
-import { formatCurrencyAUD } from "../../src/ui/format";
-import { upsert, loadAll, type LogEntry } from "../../src/storage"; 
-import { Picker } from "@react-native-picker/picker";
-import { Card, Field, H1, SolidCard } from "../../src/ui/components"; 
-import { Button } from '../../src/ui/Button'; 
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import dayjs from 'dayjs';
+import { computePayV2, type PayType, type PieceUnit } from '../../src/domain';
+import { formatCurrencyAUD } from '../../src/ui/format';
+import { upsert, loadAll, type LogEntry } from '../../src/storage';
+import { Picker } from '@react-native-picker/picker';
+import { Card, Field, H1, SolidCard } from '../../src/ui/components';
+import { Button } from '../../src/ui/Button';
 import { colors } from '../../src/ui/theme';
-import { FadeOnFocus } from "../../src/ui/animations";
+import { FadeOnFocus } from '../../src/ui/animations';
 import Toast from 'react-native-toast-message';
 
-// UI helper constants
-const BERRIES = ["Blueberry", "Raspberry", "Blackberry", "Strawberry"] as const;
+// 상단 셀렉트 옵션
+const BERRIES = ['Blueberry', 'Raspberry', 'Blackberry', 'Strawberry'] as const;
 type Berry = typeof BERRIES[number];
-type TaxMode = "whm_15" | "cash_0";
-const taxFromMode = (m: TaxMode) => (m === "whm_15" ? 15 : 0);
-const modeFromTax = (t: number) => (t === 15 ? "whm_15" : "cash_0");
+
+type TaxMode = 'whm_15' | 'cash_0';
+const taxFromMode = (m: TaxMode) => (m === 'whm_15' ? 15 : 0);
+const modeFromTax = (t: number) => (t === 15 ? 'whm_15' : 'cash_0');
 
 const WebDatePicker: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => (
   <input
     type="date"
     value={value}
     onChange={(e) => onChange((e.target as HTMLInputElement).value)}
-    style={{ border: "none", height: 48, fontSize: 16, backgroundColor: "transparent", width: "100%", outline: "none" }}
+    style={{ border: 'none', height: 48, fontSize: 16, backgroundColor: 'transparent', width: '100%', outline: 'none' }}
   />
 );
 
@@ -37,19 +38,22 @@ export default function EntryScreen() {
   const params = useLocalSearchParams();
   const editingId = params.id as string | undefined;
 
-  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
+  // 상태
+  const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [showPicker, setShowPicker] = useState(false);
-  const [berry, setBerry] = useState<Berry>("Blueberry");
-  const [payType, setPayType] = useState<PayType>("piece");
-  const [pieceUnit, setPieceUnit] = useState<PieceUnit>("kg");
-  const [kg, setKg] = useState("0");
-  const [punnets, setPunnets] = useState("0");
-  const [hours, setHours] = useState("0");
-  const [rate, setRate] = useState("0");
-  const [taxMode, setTaxMode] = useState<TaxMode>("whm_15");
-  const [comment, setComment] = useState("");
+  const [berry, setBerry] = useState<Berry>('Blueberry');
+  const [payType, setPayType] = useState<PayType>('piece');
+  const [pieceUnit, setPieceUnit] = useState<PieceUnit>('kg');
+  const [kg, setKg] = useState('0');
+  const [punnets, setPunnets] = useState('0');
+  const [buckets, setBuckets] = useState('0');
+  const [hours, setHours] = useState('0');
+  const [rate, setRate] = useState('0');
+  const [taxMode, setTaxMode] = useState<TaxMode>('whm_15');
+  const [comment, setComment] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // 수정 진입 시 데이터 로드
   useEffect(() => {
     if (!editingId) return;
     loadAll().then((entries) => {
@@ -58,38 +62,43 @@ export default function EntryScreen() {
       setDate(e.date);
       setBerry(e.berryType as Berry);
       setPayType(e.payType);
-      setPieceUnit(e.pieceUnit ?? "kg");
-      setKg(String(e.kg ?? "0"));
-      setPunnets(String(e.punnets ?? "0"));
-      setHours(String(e.hours ?? "0"));
+      setPieceUnit(e.pieceUnit ?? 'kg');
+      setKg(String(e.kg ?? '0'));
+      setPunnets(String(e.punnets ?? '0'));
+      setBuckets(String((e as any).buckets ?? '0'));
+      setHours(String(e.hours ?? '0'));
       setRate(String(e.rate));
       setTaxMode(modeFromTax(e.taxPercent));
-      setComment(e.comment ?? "");
+      setComment(e.comment ?? '');
     });
   }, [editingId]);
 
+  // 프리뷰 계산
   const taxPercent = taxFromMode(taxMode);
   const preview = useMemo(() => {
     try {
       return computePayV2({
         payType,
         pieceUnit,
-        quantity: payType === "piece" ? (pieceUnit === "kg" ? Number(kg) || 0 : Number(punnets) || 0) : undefined,
-        hours: payType === "hourly" ? Number(hours) || 0 : undefined,
+        quantity: payType === 'piece'
+          ? (pieceUnit === 'kg' ? Number(kg) || 0 : (pieceUnit === 'punnet' ? Number(punnets) || 0 : Number(buckets) || 0))
+          : undefined,
+        hours: payType === 'hourly' ? Number(hours) || 0 : undefined,
         rate: Number(rate) || 0,
         taxPercent,
       });
     } catch {
       return undefined;
     }
-  }, [payType, pieceUnit, kg, punnets, hours, rate, taxPercent]);
+  }, [payType, pieceUnit, kg, punnets, buckets, hours, rate, taxPercent]);
 
+  // 날짜 변경
   const onChangeDate = (_: DateTimePickerEvent, selectedDate?: Date) => {
     setShowPicker(false);
-    if (selectedDate) setDate(dayjs(selectedDate).format("YYYY-MM-DD"));
+    if (selectedDate) setDate(dayjs(selectedDate).format('YYYY-MM-DD'));
   };
 
-  // allow decimals to two places
+  // 숫자 입력: 소수점 둘째 자리까지 허용
   const asDecimal2 = (raw: string) => {
     let v = (raw ?? '').replace(',', '.').replace(/[^0-9.]/g, '');
     const parts = v.split('.');
@@ -99,6 +108,7 @@ export default function EntryScreen() {
     return v;
   };
 
+  // 저장
   const save = useCallback(async () => {
     if (saving) return;
     setSaving(true);
@@ -112,9 +122,10 @@ export default function EntryScreen() {
         taxPercent,
         comment: comment || undefined,
         pieceUnit,
-        kg: pieceUnit === "kg" && payType === "piece" ? Number(kg) || 0 : undefined,
-        punnets: pieceUnit === "punnet" && payType === "piece" ? Number(punnets) || 0 : undefined,
-        hours: payType === "hourly" ? Number(hours) || 0 : undefined,
+        kg: pieceUnit === 'kg' && payType === 'piece' ? Number(kg) || 0 : undefined,
+        punnets: pieceUnit === 'punnet' && payType === 'piece' ? Number(punnets) || 0 : undefined,
+        buckets: pieceUnit === 'bucket' && payType === 'piece' ? Number(buckets) || 0 : undefined,
+        hours: payType === 'hourly' ? Number(hours) || 0 : undefined,
       };
       await upsert(entry);
       Toast.show({ type: 'success', text1: editingId ? 'Log Updated' : 'Log Saved', position: 'bottom', visibilityTime: 2000 });
@@ -128,12 +139,16 @@ export default function EntryScreen() {
     } finally {
       setSaving(false);
     }
-  }, [saving, editingId, date, berry, payType, rate, taxPercent, pieceUnit, kg, punnets, hours, comment, router]);
+  }, [saving, editingId, date, berry, payType, rate, taxPercent, pieceUnit, kg, punnets, buckets, hours, comment, router]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <FadeOnFocus>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+        <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
+          <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+        </View>
+
         <Card>
           <H1>{editingId ? 'Edit Log' : 'New Log'}</H1>
 
@@ -146,12 +161,7 @@ export default function EntryScreen() {
                   <Text style={{ fontSize: 16 }}>{date} (tap to change)</Text>
                 </Pressable>
                 {showPicker && (
-                  <DateTimePicker
-                    value={dayjs(date, 'YYYY-MM-DD').toDate()}
-                    mode="date"
-                    display="calendar"
-                    onChange={onChangeDate}
-                  />
+                  <DateTimePicker value={dayjs(date, 'YYYY-MM-DD').toDate()} mode="date" display="calendar" onChange={onChangeDate} />
                 )}
               </>
             )}
@@ -178,37 +188,41 @@ export default function EntryScreen() {
                 <Picker selectedValue={pieceUnit} onValueChange={(v) => setPieceUnit(v as PieceUnit)}>
                   <Picker.Item label="kg (kilograms)" value="kg" />
                   <Picker.Item label="punnet (trays)" value="punnet" />
+                  <Picker.Item label="bucket" value="bucket" />
                 </Picker>
               </Field>
 
               {pieceUnit === 'kg' ? (
                 <Field label="Picked kg">
-                  <TextInput
-                    value={kg}
-                    onChangeText={(t) => setKg(asDecimal2(t))}
+                  <TextInput value={kg} onChangeText={(t) => setKg(asDecimal2(t))}
                     keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
                     style={{ height: 48, fontSize: 16 }}
                     onFocus={() => { if (kg === '0') setKg(''); }}
                     onBlur={() => { if (kg === '') setKg('0'); }}
                   />
                 </Field>
-              ) : (
+              ) : pieceUnit === 'punnet' ? (
                 <Field label="Punnets picked">
-                  <TextInput
-                    value={punnets}
-                    onChangeText={(t) => setPunnets(asDecimal2(t))}
+                  <TextInput value={punnets} onChangeText={(t) => setPunnets(asDecimal2(t))}
                     keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
                     style={{ height: 48, fontSize: 16 }}
                     onFocus={() => { if (punnets === '0') setPunnets(''); }}
                     onBlur={() => { if (punnets === '') setPunnets('0'); }}
                   />
                 </Field>
+              ) : (
+                <Field label="Buckets picked">
+                  <TextInput value={buckets} onChangeText={(t) => setBuckets(asDecimal2(t))}
+                    keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
+                    style={{ height: 48, fontSize: 16 }}
+                    onFocus={() => { if (buckets === '0') setBuckets(''); }}
+                    onBlur={() => { if (buckets === '') setBuckets('0'); }}
+                  />
+                </Field>
               )}
 
-              <Field label={pieceUnit === 'kg' ? 'Rate (AUD/kg)' : 'Rate (AUD/punnet)'}>
-                <TextInput
-                  value={rate}
-                  onChangeText={(t) => setRate(asDecimal2(t))}
+              <Field label={pieceUnit === 'kg' ? 'Rate (AUD/kg)' : (pieceUnit === 'punnet' ? 'Rate (AUD/punnet)' : 'Rate (AUD/bucket)')}>
+                <TextInput value={rate} onChangeText={(t) => setRate(asDecimal2(t))}
                   keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
                   style={{ height: 48, fontSize: 16 }}
                   onFocus={() => { if (rate === '0') setRate(''); }}
@@ -221,9 +235,7 @@ export default function EntryScreen() {
           {payType === 'hourly' && (
             <>
               <Field label="Hours worked">
-                <TextInput
-                  value={hours}
-                  onChangeText={(t) => setHours(asDecimal2(t))}
+                <TextInput value={hours} onChangeText={(t) => setHours(asDecimal2(t))}
                   keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
                   style={{ height: 48, fontSize: 16 }}
                   onFocus={() => { if (hours === '0') setHours(''); }}
@@ -231,9 +243,7 @@ export default function EntryScreen() {
                 />
               </Field>
               <Field label="Rate (AUD/hour)">
-                <TextInput
-                  value={rate}
-                  onChangeText={(t) => setRate(asDecimal2(t))}
+                <TextInput value={rate} onChangeText={(t) => setRate(asDecimal2(t))}
                   keyboardType={Platform.select({ ios: 'decimal-pad', android: 'decimal-pad', default: 'numeric' })}
                   style={{ height: 48, fontSize: 16 }}
                   onFocus={() => { if (rate === '0') setRate(''); }}
@@ -251,29 +261,25 @@ export default function EntryScreen() {
           </Field>
 
           <Field label="Comment (optional)">
-            <TextInput
-              value={comment}
-              onChangeText={setComment}
-              placeholder="Notes"
-              style={{ height: 48, fontSize: 16 }}
-            />
+            <TextInput value={comment} onChangeText={setComment} placeholder="Notes" style={{ height: 48, fontSize: 16 }} />
           </Field>
         </Card>
 
         {preview && (
           <SolidCard style={{ marginTop: 12 }}>
-            <Text style={{ color: '#fff', fontWeight: '700', fontFamily: 'Inter_700Bold', marginBottom: 8 }}>Preview</Text>
-            <Text style={{ color: '#fff', fontFamily: 'Inter_400Regular' }}>
+            <Text style={{ color: '#fff', fontWeight: '700', marginBottom: 8 }}>Preview</Text>
+            <Text style={{ color: '#fff' }}>
               Gross: {formatCurrencyAUD(preview.gross)} | Tax: {formatCurrencyAUD(preview.taxAmount)} | Net: {formatCurrencyAUD(preview.net)}
             </Text>
           </SolidCard>
         )}
 
         <View style={{ marginTop: 16 }}>
-          <Button title={saving ? "Saving..." : "Save log"} onPress={save} disabled={saving} />
+          <Button title={saving ? 'Saving...' : 'Save log'} onPress={save} disabled={saving} />
         </View>
       </ScrollView>
       </FadeOnFocus>
     </SafeAreaView>
   );
 }
+

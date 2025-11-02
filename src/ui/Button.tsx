@@ -7,25 +7,27 @@ import { colors, radius, spacing } from './theme';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  /** 버튼의 스타일 종류: 'solid'(기본값) 또는 'outline' */
+  // variant: 'solid' (default) or 'outline'
   variant?: 'solid' | 'outline';
-  /** 버튼 비활성화 여부 */
-  disabled?: boolean; 
+  disabled?: boolean;
+  // optional container style override
+  style?: any;
 }
 
-export const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'solid', disabled = false }) => {
+export const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'solid', disabled = false, style }) => {
   const currentVariant = disabled ? 'solid' : 'outline';
   const isSolid = currentVariant === 'solid';
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled} 
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
         isSolid ? styles.solid : styles.outline,
-        disabled && styles.disabled, 
+        disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
+        style,
       ]}
     >
       <Text style={[styles.text, isSolid ? styles.solidText : styles.outlineText]}>
@@ -70,3 +72,4 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
+

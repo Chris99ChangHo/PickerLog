@@ -1,76 +1,76 @@
-// src/domain.ts
+﻿// src/domain.ts
 
 /**
- * 이 파일은 앱의 핵심 비즈니스 로직, 즉 '급여 계산'만을 담당하는 순수 함수들을 정의합니다.
- * UI나 데이터 저장과 완전히 분리되어 있어 테스트와 유지보수가 용이합니다.
+ * ???뚯씪? ?깆쓽 ?듭떖 鍮꾩쫰?덉뒪 濡쒖쭅, 利?'湲됱뿬 怨꾩궛'留뚯쓣 ?대떦?섎뒗 ?쒖닔 ?⑥닔?ㅼ쓣 ?뺤쓽?⑸땲??
+ * UI???곗씠????κ낵 ?꾩쟾??遺꾨━?섏뼱 ?덉뼱 ?뚯뒪?몄? ?좎?蹂댁닔媛 ?⑹씠?⑸땲??
  */
 
-// --- 타입 정의 ---
+// --- ????뺤쓽 ---
 
-// 급여 계산 방식 타입: '능력제' 또는 '시급제'
+// 湲됱뿬 怨꾩궛 諛⑹떇 ??? '?λ젰?? ?먮뒗 '?쒓툒??
 export type PayType = "piece" | "hourly";
-// 능력제 계산 단위 타입: 'kg' 또는 'punnet'
-export type PieceUnit = "kg" | "punnet";
+// ?λ젰??怨꾩궛 ?⑥쐞 ??? 'kg' ?먮뒗 'punnet'
+export type PieceUnit = "kg" | "punnet" | "bucket";
 
-// 급여 계산 함수(computePayV2)에 필요한 모든 입력값을 정의하는 인터페이스
+// 湲됱뿬 怨꾩궛 ?⑥닔(computePayV2)???꾩슂??紐⑤뱺 ?낅젰媛믪쓣 ?뺤쓽?섎뒗 ?명꽣?섏씠??
 export interface ComputePayInput {
   payType: PayType;
-  rate: number;          // 단위(kg, punnet, 시간)당 단가
-  taxPercent: number;    // 세금 비율 (0-100)
+  rate: number;          // ?⑥쐞(kg, punnet, ?쒓컙)???④?
+  taxPercent: number;    // ?멸툑 鍮꾩쑉 (0-100)
   
-  // 능력제(piece)일 경우 필요한 값
-  pieceUnit?: PieceUnit; // 계산 단위 ('kg'가 기본값)
-  quantity?: number;     // 수확량 (kg 또는 punnet 개수)
+  // ?λ젰??piece)??寃쎌슦 ?꾩슂??媛?
+  pieceUnit?: PieceUnit; // 怨꾩궛 ?⑥쐞 ('kg'媛 湲곕낯媛?
+  quantity?: number;     // ?섑솗??(kg ?먮뒗 punnet 媛쒖닔)
   
-  // 시급제(hourly)일 경우 필요한 값
+  // ?쒓툒??hourly)??寃쎌슦 ?꾩슂??媛?
   hours?: number;
 }
 
-// 급여 계산 함수의 결과값 구조를 정의하는 인터페이스
+// 湲됱뿬 怨꾩궛 ?⑥닔??寃곌낵媛?援ъ“瑜??뺤쓽?섎뒗 ?명꽣?섏씠??
 export interface ComputePayResult {
-  gross: number;    // 세전 수입
-  taxAmount: number; // 세금액
-  net: number;      // 세후 수입 (실수령액)
+  gross: number;    // ?몄쟾 ?섏엯
+  taxAmount: number; // ?멸툑??
+  net: number;      // ?명썑 ?섏엯 (?ㅼ닔?뱀븸)
 }
 
 
-// --- 헬퍼 함수 ---
+// --- ?ы띁 ?⑥닔 ---
 
 /**
- * 주어진 숫자를 특정 범위(최소~최대) 안에 있도록 값을 조정하는 함수
- * @param v 원본 숫자
- * @param lo 최소값
- * @param hi 최대값
+ * 二쇱뼱吏??レ옄瑜??뱀젙 踰붿쐞(理쒖냼~理쒕?) ?덉뿉 ?덈룄濡?媛믪쓣 議곗젙?섎뒗 ?⑥닔
+ * @param v ?먮낯 ?レ옄
+ * @param lo 理쒖냼媛?
+ * @param hi 理쒕?媛?
  */
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 
-// --- 핵심 계산 함수 ---
+// --- ?듭떖 怨꾩궛 ?⑥닔 ---
 
 /**
- * 모든 급여 계산을 처리하는 메인 함수 (버전 2)
- * @param input - ComputePayInput 객체
- * @returns ComputePayResult 객체 (세전, 세금, 세후 수입)
+ * 紐⑤뱺 湲됱뿬 怨꾩궛??泥섎━?섎뒗 硫붿씤 ?⑥닔 (踰꾩쟾 2)
+ * @param input - ComputePayInput 媛앹껜
+ * @returns ComputePayResult 媛앹껜 (?몄쟾, ?멸툑, ?명썑 ?섏엯)
  */
 export function computePayV2(input: ComputePayInput): ComputePayResult {
-  // 0보다 작은 값이 들어오지 않도록 보정
+  // 0蹂대떎 ?묒? 媛믪씠 ?ㅼ뼱?ㅼ? ?딅룄濡?蹂댁젙
   const rate = Math.max(0, input.rate || 0);
-  // 세금 비율을 0~100 사이로 고정하고, 계산을 위해 100으로 나눔 (예: 15% -> 0.15)
+  // ?멸툑 鍮꾩쑉??0~100 ?ъ씠濡?怨좎젙?섍퀬, 怨꾩궛???꾪빐 100?쇰줈 ?섎닎 (?? 15% -> 0.15)
   const tax = clamp(input.taxPercent ?? 0, 0, 100) / 100;
 
-  let gross = 0; // 세전 수입 초기화
+  let gross = 0; // ?몄쟾 ?섏엯 珥덇린??
   
   if (input.payType === "piece") {
-    // 능력제일 경우
+    // ?λ젰?쒖씪 寃쎌슦
     const qty = Math.max(0, input.quantity || 0);
-    gross = rate * qty; // 단가 * 수량
+    gross = rate * qty; // ?④? * ?섎웾
   } else {
-    // 시급제일 경우
+    // ?쒓툒?쒖씪 寃쎌슦
     const hrs = Math.max(0, input.hours || 0);
-    gross = rate * hrs; // 시급 * 시간
+    gross = rate * hrs; // ?쒓툒 * ?쒓컙
   }
 
-  // 소수점 2자리까지 반올림하여 계산
+  // ?뚯닔??2?먮━源뚯? 諛섏삱由쇳븯??怨꾩궛
   const taxAmount = +(gross * tax).toFixed(2);
   const net = +(gross - taxAmount).toFixed(2);
   return { gross: +gross.toFixed(2), taxAmount, net };

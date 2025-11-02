@@ -1,4 +1,4 @@
-// src/ui/components.tsx
+﻿// src/ui/components.tsx
 import React from "react";
 import { View, Text, ViewProps } from "react-native";
 import { colors, radius, spacing, type as t } from "./theme";
