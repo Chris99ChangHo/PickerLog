@@ -1,6 +1,7 @@
 // app/_layout.tsx
 
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
@@ -31,10 +32,10 @@ export default function RootLayout() {
   
   // 폰트 로딩이 끝나면 앱의 나머지 부분과 Toast를 함께 보여줍니다.
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
       {/* ✅ 토스트: 앱 최상단에 Toast 컴포넌트를 렌더링합니다. */}
       <Toast />
-    </>
+    </GestureHandlerRootView>
   );
 }

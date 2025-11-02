@@ -1,7 +1,7 @@
-// app/(tabs)/_layout.tsx
+﻿// app/(tabs)/_layout.tsx
 
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { View, Image, StyleSheet } from "react-native";
 import { colors } from "../../src/ui/theme";
 
 export default function TabsLayout() {
@@ -11,43 +11,79 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: "#9AA2A9",
-        tabBarStyle: { backgroundColor: "#fff", borderTopColor: colors.border },
+        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
         tabBarShowLabel: false,
       }}
     >
-      {/* Entry 탭 */}
+      {/* Entry */}
       <Tabs.Screen
         name="entry"
         options={{
           title: "Entry",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color: color }}>✏️</Text>
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+              <Image
+                source={require('../../assets/PickerLog-Entry.png')}
+                style={[styles.icon, !focused && styles.iconInactive]}
+                resizeMode="contain"
+              />
+            </View>
           ),
         }}
       />
-      {/* Calendar 탭 */}
+      {/* Calendar */}
       <Tabs.Screen
         name="calendar"
         options={{
           title: "Calendar",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color: color }}>📅</Text>
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+              <Image
+                source={require('../../assets/PickerLog-Calendar.png')}
+                style={[styles.icon, !focused && styles.iconInactive]}
+                resizeMode="contain"
+              />
+            </View>
           ),
         }}
       />
-      {/* Stats 탭 */}
+      {/* Stats */}
       <Tabs.Screen
         name="stats"
         options={{
           title: "Statistics",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color: color }}>📊</Text>
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+              <Image
+                source={require('../../assets/PickerLog-Stats.png')}
+                style={[styles.icon, !focused && styles.iconInactive]}
+                resizeMode="contain"
+              />
+            </View>
           ),
         }}
       />
-      
-      {/* index 스크린은 탭 메뉴에 표시하지 않음 */}
+
+      {/* index screen hidden from tab menu */}
       <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabItem: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  tabItemActive: {
+    backgroundColor: colors.brandSoft,
+  },
+  icon: {
+    width: 22,
+    height: 22,
+  },
+  iconInactive: {
+    opacity: 0.7,
+  },
+});

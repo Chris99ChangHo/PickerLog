@@ -3,6 +3,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "react-native";
+import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar, DateData } from "react-native-calendars";
@@ -138,44 +139,53 @@ export default function CalendarScreen() {
             });
 
             return (
-              <View style={styles.itemRow}>
-                {/* 항목 터치 시 편집 화면으로 이동 */}
-                <Pressable
-                  style={{ flex: 1 }}
-                  onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
-                >
-                  <Card>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.itemTitle}>{e.berryType}</Text>
-                      <Text style={styles.mono}>
-                        {e.payType === 'piece'
-                          ? (e.pieceUnit === 'punnet' ? `${e.punnets ?? 0} p` : (e.pieceUnit === 'bucket' ? `${(e as any).buckets ?? 0} bucket` : `${e.kg ?? 0} kg`))
-                          : `${e.hours ?? 0} h`}
+              <Swipeable
+                renderRightActions={() => (
+                  <View style={styles.swipeActionsContainer}>
+                    <Pressable
+                      onPress={() => confirmDelete(e.id)}
+                      style={styles.swipeDelete}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete entry"
+                    >
+                      <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FFFFFF" />
+                      <Text style={styles.swipeDeleteText}>Delete</Text>
+                    </Pressable>
+                  </View>
+                )}
+                rightThreshold={32}
+                overshootRight={false}
+              >
+                <View style={styles.itemRow}>
+                  {/* 항목 터치 시 편집 화면으로 이동 */}
+                  <Pressable
+                    style={{ flex: 1 }}
+                    onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
+                  >
+                    <Card style={{ paddingVertical: 16 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={styles.itemTitle}>{e.berryType}</Text>
+                        <Text style={styles.mono}>
+                          {e.payType === 'piece'
+                            ? (e.pieceUnit === 'punnet' ? `${e.punnets ?? 0} p` : (e.pieceUnit === 'bucket' ? `${(e as any).buckets ?? 0} bucket` : `${e.kg ?? 0} kg`))
+                            : `${e.hours ?? 0} h`}
+                        </Text>
+                      </View>
+                      <Text style={styles.itemSubtitle}>
+                        Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
                       </Text>
-                    </View>
-                    <Text style={styles.itemSubtitle}>
-                      Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
-                    </Text>
-                    {!!e.comment && (
-                      <>
-                        <View style={styles.hr} />
-                        <Text style={styles.itemComment}>{e.comment}</Text>
-                      </>
-                    )}
-                  </Card>
-                </Pressable>
+                      {!!e.comment && (
+                        <>
+                          <View style={styles.hr} />
+                          <Text style={styles.itemComment}>{e.comment}</Text>
+                        </>
+                      )}
+                    </Card>
+                  </Pressable>
 
-                {/* 삭제 버튼 */}
-                <Pressable
-                  onPress={() => confirmDelete(e.id)}
-                  style={styles.deleteButton}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel="Delete entry"
-                >
-                  <MaterialCommunityIcons name="trash-can-outline" size={20} color="#CC0000" />
-                </Pressable>
-              </View>
+                </View>
+              </Swipeable>
             );
           }}
         />
@@ -264,15 +274,34 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Inter_700Bold',
   },
+  swipeActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  swipeDelete: {
+    width: 88,
+    height: '100%',
+    backgroundColor: '#E57373',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swipeDeleteText: {
+    color: '#FFFFFF',
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
   itemTitle: {
     fontWeight: "700",
     marginBottom: 0,  
     color: colors.text,
     fontFamily: 'Inter_700Bold',
+    fontSize: 16,
   },
   itemSubtitle: {
     color: colors.sub,
     fontFamily: 'Inter_400Regular',
+    fontSize: 13,
   },
   itemComment: {
     marginTop: 6,
@@ -286,4 +315,3 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
-
