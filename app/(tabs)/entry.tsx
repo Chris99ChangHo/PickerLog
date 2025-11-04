@@ -1,9 +1,9 @@
-// app/(tabs)/entry.tsx
+﻿// app/(tabs)/entry.tsx
 
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Pressable, Platform, Image as RNImage } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import { computePayV2, type PayType, type PieceUnit } from '../../src/domain';
@@ -73,6 +73,27 @@ export default function EntryScreen() {
     });
   }, [editingId]);
 
+  // 신규 작성 초기 상태로 리셋 (탭 복귀 시)
+  const resetForm = useCallback(() => {
+    setDate(dayjs().format('YYYY-MM-DD'));
+    setBerry('Blueberry');
+    setPayType('piece');
+    setPieceUnit('kg');
+    setKg('0');
+    setPunnets('0');
+    setBuckets('0');
+    setHours('0');
+    setRate('0');
+    setTaxMode('whm_15');
+    setComment('');
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!editingId) resetForm();
+    }, [editingId, resetForm])
+  );
+
   // 프리뷰 계산
   const taxPercent = taxFromMode(taxMode);
   const preview = useMemo(() => {
@@ -129,6 +150,8 @@ export default function EntryScreen() {
       };
       await upsert(entry);
       Toast.show({ type: 'success', text1: editingId ? 'Log Updated' : 'Log Saved', position: 'bottom', visibilityTime: 2000 });
+      // Ensure Entry tab remembers a clean route (no ?id) after finishing edit
+      try { router.replace('/(tabs)/entry'); } catch {}
       setTimeout(() => {
         if (router.canGoBack()) router.back();
         else router.replace('/(tabs)/calendar');
@@ -150,7 +173,6 @@ export default function EntryScreen() {
         </View>
 
         <Card>
-          <H1>{editingId ? 'Edit Log' : 'New Log'}</H1>
 
           <Field label="Date">
             {Platform.OS === 'web' ? (
@@ -161,7 +183,7 @@ export default function EntryScreen() {
                   <Text style={{ fontSize: 16 }}>{date} (tap to change)</Text>
                 </Pressable>
                 {showPicker && (
-                  <DateTimePicker value={dayjs(date, 'YYYY-MM-DD').toDate()} mode="date" display="calendar" onChange={onChangeDate} />
+                  <DateTimePicker value={dayjs(date, 'YYYY-MM-DD').toDate()} mode="date" display={Platform.OS === "ios" ? "spinner" : "calendar"} onChange={onChangeDate} />
                 )}
               </>
             )}
@@ -275,11 +297,10 @@ export default function EntryScreen() {
         )}
 
         <View style={{ marginTop: 16 }}>
-          <Button title={saving ? 'Saving...' : 'Save log'} onPress={save} disabled={saving} />
+          <Button title={saving ? 'Saving...' : (editingId ? 'Edit Log' : 'Save Log')} onPress={save} disabled={saving} />
         </View>
       </ScrollView>
       </FadeOnFocus>
     </SafeAreaView>
   );
 }
-

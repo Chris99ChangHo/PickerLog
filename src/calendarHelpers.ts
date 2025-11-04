@@ -18,6 +18,7 @@ export type Marked = {
   dotColor?: string;
   selected?: boolean;
   selectedColor?: string;
+  selectedTextColor?: string;
 };
 
 /**
@@ -57,6 +58,15 @@ export function makeMarkedDates(groups: Group[], selected: string) {
       selectedColor: colors.brand,
     };
   }
+
+  // Today highlight: subtle pill that coexists with selected day
+  const today = new Date().toISOString().slice(0, 10);
+  marks[today] = {
+    ...(marks[today] || {}),
+    selected: true,
+    selectedColor: colors.brandSoft,
+    selectedTextColor: colors.brand,
+  };
 
   return marks;
 }

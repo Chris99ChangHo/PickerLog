@@ -2,6 +2,7 @@
 
 import { Tabs } from "expo-router";
 import { View, Image, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from "../../src/ui/theme";
 
 export default function TabsLayout() {
@@ -64,6 +65,19 @@ export default function TabsLayout() {
         }}
       />
 
+      {/* Info (last) */}
+      <Tabs.Screen
+        name="info"
+        options={{
+          title: "Info",
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+              <MaterialCommunityIcons name="information-outline" size={24} color={focused ? colors.brand : '#9AA2A9'} />
+            </View>
+          ),
+        }}
+      />
+
       {/* index screen hidden from tab menu */}
       <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
@@ -80,8 +94,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandSoft,
   },
   icon: {
-    width: 22,
-    height: 22,
+    width: 24,
+    height: 24,
   },
   iconInactive: {
     opacity: 0.7,

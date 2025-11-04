@@ -246,8 +246,10 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <FadeOnFocus>
-      <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
-        <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+        <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
+          <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+        </View>
       </View>
       {/* 월간/주간 선택 */}
       <View style={styles.buttonContainer}>
@@ -392,7 +394,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingTop: 16,
+    paddingTop: 0,
     paddingBottom: 8,
     paddingHorizontal: 16,
     gap: 10,

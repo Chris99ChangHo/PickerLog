@@ -15,6 +15,7 @@ export const spacing = { xs: 6, sm: 10, md: 14, lg: 20, xl: 28 };
 export const type = {
   h1: { fontSize: 22, fontWeight: "700" as const, fontFamily: "Inter_700Bold" },
   body: { fontSize: 16, fontFamily: "Inter_400Regular" },
-  label: { fontSize: 13, color: "#666", fontFamily: "Inter_600SemiBold" },
+  // Labels (e.g., Entry form field subtitles) get a subtle brand emphasis
+  label: { fontSize: 13, color: colors.brand600, fontFamily: "Inter_600SemiBold" },
 };
 

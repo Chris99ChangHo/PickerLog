@@ -90,24 +90,26 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <FadeOnFocus>
-        <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
-          <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
+            <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+          </View>
+          <Calendar
+            markedDates={marked}
+            onDayPress={onDayPress}
+            initialDate={selected}
+            theme={{
+              todayTextColor: colors.brand,
+              selectedDayBackgroundColor: colors.brand,
+              selectedDayTextColor: "#fff",
+              dotColor: colors.brand,
+              arrowColor: colors.brand,
+              monthTextColor: colors.text,
+              textSectionTitleColor: colors.sub,
+            }}
+            style={styles.calendar}
+          />
         </View>
-        <Calendar
-          markedDates={marked}
-          onDayPress={onDayPress}
-          initialDate={selected}
-          theme={{
-            todayTextColor: colors.brand,
-            selectedDayBackgroundColor: colors.brand,
-            selectedDayTextColor: "#fff",
-            dotColor: colors.brand,
-            arrowColor: colors.brand,
-            monthTextColor: colors.text,
-            textSectionTitleColor: colors.sub,
-          }}
-          style={styles.calendar}
-        />
 
         <FlatList
           contentContainerStyle={styles.listContent}
@@ -201,7 +203,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   calendar: {
-    margin: 16,
+    marginHorizontal: 0,
+    marginTop: 0,
+    marginBottom: 0,
     borderRadius: 18,
     overflow: "hidden",
   },
