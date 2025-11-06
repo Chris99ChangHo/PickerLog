@@ -97,13 +97,23 @@ export default function InfoScreen() {
           ListEmptyComponent={<Text style={styles.empty}>No results.</Text>}
           renderItem={({ item: r }) => (
             <Card>
-              <View style={styles.rowTop}>
-                <Text style={styles.postcode}>{r.postcode}</Text>
-                <Text style={[styles.eligible, r.eligible ? styles.eligibleYes : styles.eligibleNo]}>
-                  {r.eligible ? 'Eligible' : 'Not eligible'}
-                </Text>
+              <View style={styles.rowMain}>
+                {/* 왼쪽: 정보 영역 */}
+                <View style={styles.rowLeft}>
+                  <Text style={styles.postcode}>{r.postcode}</Text>
+                  <Text style={styles.suburb} numberOfLines={2}>{r.suburb}</Text>
+                  <Text style={styles.state}>{r.state}</Text>
+                </View>
+
+                {/* 오른쪽: 자격 뱃지 */}
+                <View>
+                  <Text style={[styles.eligible, r.eligible ? styles.eligibleYes : styles.eligibleNo]}>
+                    {r.eligible ? 'Eligible' : 'Not eligible'}
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.suburb}>{r.suburb} 쨌 {r.state}</Text>
+
+              {/* 하단: 노트 */}
               {!!r.note && <Text style={styles.note}>{r.note}</Text>}
             </Card>
           )}
@@ -131,12 +141,17 @@ const styles = StyleSheet.create({
   toggleTextOn: { color: colors.brand },
 
   listContent: { paddingHorizontal: 16, paddingBottom: 16, gap: 12, marginTop: 12 },
-  rowTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  postcode: { fontSize: 18, fontWeight: '700', fontFamily: 'Inter_700Bold', color: colors.text },
-  suburb: { color: colors.sub, marginTop: 4, fontFamily: 'Inter_400Regular' },
-  eligible: { fontSize: 12, fontFamily: 'Inter_600SemiBold', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  
+  // 레이아웃 개선 스타일
+  rowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  rowLeft: { flex: 1, marginRight: 8 },
+  postcode: { fontSize: 18, fontWeight: '700', fontFamily: 'Inter_700Bold', color: colors.text, marginBottom: 2 },
+  suburb: { fontSize: 16, color: colors.text, fontFamily: 'Inter_500Medium' },
+  state: { fontSize: 14, color: colors.sub, fontFamily: 'Inter_400Regular', marginTop: 4 },
+  
+  eligible: { fontSize: 12, fontFamily: 'Inter_600SemiBold', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, overflow: 'hidden' },
   eligibleYes: { backgroundColor: colors.brandSoft, color: colors.brand },
   eligibleNo: { backgroundColor: '#FEEAEA', color: '#CC0000' },
-  note: { marginTop: 6, color: colors.sub, fontFamily: 'Inter_400Regular' },
+  note: { marginTop: 8, color: colors.sub, fontFamily: 'Inter_400Regular', fontStyle: 'italic' },
   empty: { textAlign: 'center', marginTop: 24, color: colors.sub, fontFamily: 'Inter_400Regular' },
 });

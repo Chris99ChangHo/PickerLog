@@ -72,7 +72,11 @@ export default function TabsLayout() {
           title: "Info",
           tabBarIcon: ({ focused }) => (
             <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <MaterialCommunityIcons name="information-outline" size={24} color={focused ? colors.brand : '#9AA2A9'} />
+              <Image
+                source={require('../../assets/PickerLog-Info.png')}
+                style={[styles.icon, !focused && styles.iconInactive]}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}

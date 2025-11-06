@@ -3,7 +3,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
 import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "react-native";
-import { Swipeable } from 'react-native-gesture-handler';
+import { Swipeable } from '../../src/ui/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
 import { Calendar, DateData } from "react-native-calendars";
@@ -319,3 +319,4 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
+
