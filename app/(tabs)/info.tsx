@@ -1,4 +1,4 @@
-// app/(tabs)/info.tsx
+﻿// app/(tabs)/info.tsx
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
@@ -11,7 +11,7 @@ import 'dayjs/locale/en-au';
 import { colors } from '../../src/ui/theme';
 import { Card, SolidCard } from '../../src/ui/components';
 import { FadeOnFocus } from '../../src/ui/animations';
-import { loadBundledPostcodes, type PostcodeRecord } from '../../src/infoData';
+import { loadAustralianPostcodes, type PostcodeRecord } from '../../src/infoData';
 
 dayjs.locale('en-au');
 
@@ -27,7 +27,7 @@ export default function InfoScreen() {
   const [data, setData] = React.useState<PostcodeRecord[]>([]);
 
   React.useEffect(() => {
-    loadBundledPostcodes().then(setData).catch(() => setData([]));
+    loadAustralianPostcodes().then(setData).catch(() => setData([]));
   }, []);
 
   const filtered = React.useMemo(() => {
@@ -103,7 +103,7 @@ export default function InfoScreen() {
                   {r.eligible ? 'Eligible' : 'Not eligible'}
                 </Text>
               </View>
-              <Text style={styles.suburb}>{r.suburb} · {r.state}</Text>
+              <Text style={styles.suburb}>{r.suburb} 쨌 {r.state}</Text>
               {!!r.note && <Text style={styles.note}>{r.note}</Text>}
             </Card>
           )}
