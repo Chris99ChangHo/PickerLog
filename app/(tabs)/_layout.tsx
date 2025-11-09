@@ -12,6 +12,9 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: "#9AA2A9",
+        tabBarActiveBackgroundColor: colors.brandSoft,
+        tabBarInactiveBackgroundColor: colors.card,
+        tabBarItemStyle: { borderRadius: 14, marginHorizontal: 8, marginVertical: 4 },
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
         tabBarShowLabel: false,
       }}
@@ -94,14 +97,20 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
   },
-  tabItemActive: {
-    backgroundColor: colors.brandSoft,
-  },
+  tabItemActive: {},
   icon: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
   },
   iconInactive: {
     opacity: 0.7,
   },
 });
+
+
+
+
+
+
+
+

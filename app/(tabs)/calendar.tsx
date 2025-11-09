@@ -2,7 +2,7 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
-import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage, Platform } from "react-native";
 import { Swipeable } from '../../src/ui/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
@@ -167,12 +167,16 @@ export default function CalendarScreen() {
                   >
                     <Card style={{ paddingVertical: 16 }}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={styles.itemTitle}>{e.berryType}</Text>
-                        <Text style={styles.mono}>
-                          {e.payType === 'piece'
-                            ? (e.pieceUnit === 'punnet' ? `${e.punnets ?? 0} p` : (e.pieceUnit === 'bucket' ? `${(e as any).buckets ?? 0} bucket` : `${e.kg ?? 0} kg`))
-                            : `${e.hours ?? 0} h`}
-                        </Text>
+                      <Text style={[styles.itemTitle, { color: berryColor(e.berryType) }]}>{e.berryType}</Text>
+                      <Text style={styles.mono}>
+                        {e.payType === 'piece'
+                          ? (e.pieceUnit === 'punnet'
+                              ? `${e.punnets ?? 0} punnets`
+                              : (e.pieceUnit === 'bucket'
+                                  ? `${(e as any).buckets ?? 0} buckets`
+                                  : `${e.kg ?? 0} kg`))
+                          : `${e.hours ?? 0} hours`}
+                      </Text>
                       </View>
                       <Text style={styles.itemSubtitle}>
                         Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
@@ -320,3 +324,12 @@ const styles = StyleSheet.create({
   },
 });
 
+  // Berry color mapping (match stats for consistency)
+  const berryColor = React.useCallback((name: string) => {
+    const key = (name || 'unknown').toLowerCase();
+    if (key.includes('strawberry')) return '#FF5964';
+    if (key.includes('blueberry')) return '#4F7BFF';
+    if (key.includes('raspberry')) return '#FF5FA2';
+    if (key.includes('blackberry')) return '#6A56C8';
+    return colors.brand;
+  }, []);

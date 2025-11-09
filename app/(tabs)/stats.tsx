@@ -212,14 +212,16 @@ export default function StatsScreen() {
     return entries;
   }, [allEntries, currentPeriodKey, period]);
 
-  const piePalette = [
-    colors.brand,
-    colors.brand600,
-    '#6BD168',
-    '#94E28F',
-    '#BFEFC0',
-    '#E2F7E2',
-  ];
+  // Saturated color mapping by berry type for clearer distinction
+  const berryColor = (name: string) => {
+    const key = (name || 'unknown').toLowerCase();
+    // Slightly more saturated but readable on white labels
+    if (key.includes('strawberry')) return '#FF5964'; // vivid red-pink
+    if (key.includes('blueberry')) return '#4F7BFF'; // vivid blue
+    if (key.includes('raspberry')) return '#FF5FA2'; // vivid pink
+    if (key.includes('blackberry')) return '#6A56C8'; // vivid purple
+    return '#50D94D'; // default brand green
+  };
 
   const renderItem = ({ item }: { item: StatRow }) => (
     <Card style={{ paddingVertical: 16 }}>
@@ -269,7 +271,7 @@ export default function StatsScreen() {
             <View style={styles.pieCenter}>
               <Animated.View style={pieAnimStyle} key={`pie-${period}-${currentPeriodKey}`}>
               <DonutChart
-                data={berrySlices.map((s, i) => ({ value: s.y, color: piePalette[i % piePalette.length], label: s.x }))}
+                data={berrySlices.map((s) => ({ value: s.y, color: berryColor(s.x), label: s.x }))}
                 size={200}
                 innerRadiusRatio={0.6}
                 showPercentLabels
@@ -286,7 +288,7 @@ export default function StatsScreen() {
                 return shown.map((s, i) => (
                   <View key={`${s.x}-${i}`} style={styles.legendItem}>
                     <View style={styles.legendLeft}>
-                      <View style={[styles.legendSwatch, { backgroundColor: piePalette[i % piePalette.length] }]} />
+                      <View style={[styles.legendSwatch, { backgroundColor: berryColor(s.x) }]} />
                       <Text style={styles.legendText} numberOfLines={1}>{s.x}</Text>
                     </View>
                     <View style={styles.legendRight}>
