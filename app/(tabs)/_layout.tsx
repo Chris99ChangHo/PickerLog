@@ -2,7 +2,32 @@
 
 import { Tabs } from "expo-router";
 import { View, Image, StyleSheet } from "react-native";
+import type { ImageSourcePropType } from "react-native";
 import { colors } from "../../src/ui/theme";
+
+// 1. 아이콘 컴포넌트를 외부로 분리 (린트 경고 해결 & 성능 최적화)
+interface TabIconProps {
+  focused: boolean;
+  source: ImageSourcePropType;
+}
+
+const TabIcon = ({ focused, source }: TabIconProps) => (
+  <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+    <Image
+      source={source}
+      style={[styles.icon, !focused && styles.iconInactive]}
+      resizeMode="contain"
+    />
+  </View>
+);
+
+const makeTabIcon = (source: ImageSourcePropType) => ({ focused }: { focused: boolean }) =>
+  <TabIcon focused={focused} source={source} />;
+
+const entryIcon = makeTabIcon(require('../../assets/PickerLog-Entry.png'));
+const calendarIcon = makeTabIcon(require('../../assets/PickerLog-Calendar.png'));
+const statsIcon = makeTabIcon(require('../../assets/PickerLog-Stats.png'));
+const infoIcon = makeTabIcon(require('../../assets/PickerLog-Info.png'));
 
 export default function TabsLayout() {
   return (
@@ -18,74 +43,34 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
       }}
     >
-      {/* Entry */}
       <Tabs.Screen
         name="entry"
         options={{
           title: "Entry",
-          tabBarIcon: ({ focused }) => (
-            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <Image
-                source={require('../../assets/PickerLog-Entry.png')}
-                style={[styles.icon, !focused && styles.iconInactive]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: entryIcon,
         }}
       />
-      {/* Calendar */}
       <Tabs.Screen
         name="calendar"
         options={{
           title: "Calendar",
-          tabBarIcon: ({ focused }) => (
-            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <Image
-                source={require('../../assets/PickerLog-Calendar.png')}
-                style={[styles.icon, !focused && styles.iconInactive]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: calendarIcon,
         }}
       />
-      {/* Stats */}
       <Tabs.Screen
         name="stats"
         options={{
           title: "Statistics",
-          tabBarIcon: ({ focused }) => (
-            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <Image
-                source={require('../../assets/PickerLog-Stats.png')}
-                style={[styles.icon, !focused && styles.iconInactive]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: statsIcon,
         }}
       />
-
-      {/* Info (last) */}
       <Tabs.Screen
         name="info"
         options={{
           title: "Info",
-          tabBarIcon: ({ focused }) => (
-            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <Image
-                source={require('../../assets/PickerLog-Info.png')}
-                style={[styles.icon, !focused && styles.iconInactive]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: infoIcon,
         }}
       />
-
-      {/* index screen hidden from tab menu */}
-      <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -105,11 +90,3 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
-
-
-
-
-
-
-
-

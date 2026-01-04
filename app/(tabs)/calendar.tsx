@@ -6,7 +6,7 @@ import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "r
 import { Swipeable } from '../../src/ui/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
-import { Calendar, DateData } from "react-native-calendars";
+import { Calendar, type DateData } from "react-native-calendars";
 import dayjs from "dayjs";
 import "dayjs/locale/en-au";
 
@@ -105,21 +105,108 @@ export default function CalendarScreen() {
     setSelected(day.dateString);
   }, []);
 
-  const confirmDelete = async (id: string) => {
+  const confirmDelete = React.useCallback(async (id: string) => {
     // 삭제 확인 후 실제 삭제 수행
     const ok = await confirmAsync("Delete Log", "Are you sure?");
     if (!ok) return;
     await remove(id);
     setAll(prevAll => prevAll.filter(entry => entry.id !== id));
-  };
+  }, []);
+
+  const renderHeader = React.useCallback(() => (
+    <SolidCard>
+      {/* 날짜 표시(en-AU): "D/MM/YYYY" (예: 31/12/2025) */}
+      <Text style={styles.headerDate}>
+        {dayjs(selected).format("D/MM/YYYY")}
+      </Text>
+      <Text style={styles.headerTotals}>
+        Gross: {formatCurrencyAUD(totals.gross)} | Tax: {formatCurrencyAUD(totals.tax)} | Net: {formatCurrencyAUD(totals.net)}
+      </Text>
+      {itemsToday.length === 0 && (
+        <Text style={styles.headerEmpty}>No entries for this day.</Text>
+      )}
+    </SolidCard>
+  ), [itemsToday.length, selected, totals.gross, totals.net, totals.tax]);
+
+  const renderItem = React.useCallback(({ item: e }: { item: LogEntry }) => {
+    const r = computePayV2({
+      payType: e.payType,
+      pieceUnit: e.pieceUnit ?? "kg",
+      quantity: e.payType === "piece"
+        ? resolvePieceQuantity({
+            pieceUnit: e.pieceUnit ?? "kg",
+            kg: e.kg,
+            punnets: e.punnets,
+            buckets: e.buckets,
+          })
+        : undefined,
+      hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
+      rate: e.rate,
+      taxPercent: e.taxPercent,
+    });
+
+    return (
+      <Swipeable
+        renderRightActions={() => (
+          <View style={styles.swipeActionsContainer}>
+            <Pressable
+              onPress={() => confirmDelete(e.id)}
+              style={styles.swipeDelete}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Delete entry"
+            >
+              <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FFFFFF" />
+              <Text style={styles.swipeDeleteText}>Delete</Text>
+            </Pressable>
+          </View>
+        )}
+        rightThreshold={32}
+        overshootRight={false}
+      >
+        <View style={styles.itemRow}>
+          {/* 항목 터치 시 편집 화면으로 이동 */}
+          <Pressable
+            style={styles.entryPressable}
+            onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
+          >
+            <Card style={styles.itemCard}>
+              <View style={styles.itemHeaderRow}>
+                <Text style={[styles.itemTitle, { color: berryColor(e.berryType) }]}>{e.berryType}</Text>
+                <Text style={styles.mono}>
+                  {e.payType === 'piece'
+                    ? (e.pieceUnit === 'punnet'
+                        ? `${e.punnets ?? 0} punnets`
+                        : (e.pieceUnit === 'bucket'
+                            ? `${e.buckets ?? 0} buckets`
+                            : `${e.kg ?? 0} kg`))
+                    : `${e.hours ?? 0} hours`}
+                </Text>
+              </View>
+              <Text style={styles.itemSubtitle}>
+                Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
+              </Text>
+              {!!e.comment && (
+                <>
+                  <View style={styles.hr} />
+                  <Text style={styles.itemComment}>{e.comment}</Text>
+                </>
+              )}
+            </Card>
+          </Pressable>
+
+        </View>
+      </Swipeable>
+    );
+  }, [router, confirmDelete]);
 
   // --- UI 렌더링 ---
   return (
     <SafeAreaView style={styles.safeArea}>
       <FadeOnFocus>
-        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-          <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 12 }}>
-            <RNImage source={require('../../assets/PickerLog-Brand.png')} style={{ width: 160, height: 24, resizeMode: 'contain' }} />
+        <View style={styles.headerContainer}>
+          <View style={styles.brandWrapper}>
+            <RNImage source={require('../../assets/PickerLog-Brand.png')} style={styles.brandImage} />
           </View>
           <Calendar
             markedDates={marked}
@@ -144,91 +231,8 @@ export default function CalendarScreen() {
           keyExtractor={(e) => e.id}
           refreshing={refreshing}
           onRefresh={refreshData}
-          ListHeaderComponent={() => (
-            <SolidCard>
-              {/* 날짜 표시(en-AU): "D/MM/YYYY" (예: 31/12/2025) */}
-              <Text style={styles.headerDate}>
-                {dayjs(selected).format("D/MM/YYYY")}
-              </Text>
-              <Text style={styles.headerTotals}>
-                Gross: {formatCurrencyAUD(totals.gross)} | Tax: {formatCurrencyAUD(totals.tax)} | Net: {formatCurrencyAUD(totals.net)}
-              </Text>
-              {itemsToday.length === 0 && (
-                <Text style={styles.headerEmpty}>No entries for this day.</Text>
-              )}
-            </SolidCard>
-          )}
-          renderItem={({ item: e }) => {
-            const r = computePayV2({
-              payType: e.payType,
-              pieceUnit: e.pieceUnit ?? "kg",
-              quantity: e.payType === "piece"
-                ? resolvePieceQuantity({
-                    pieceUnit: e.pieceUnit ?? "kg",
-                    kg: e.kg,
-                    punnets: e.punnets,
-                    buckets: e.buckets,
-                  })
-                : undefined,
-              hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
-              rate: e.rate,
-              taxPercent: e.taxPercent,
-            });
-
-            return (
-              <Swipeable
-                renderRightActions={() => (
-                  <View style={styles.swipeActionsContainer}>
-                    <Pressable
-                      onPress={() => confirmDelete(e.id)}
-                      style={styles.swipeDelete}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel="Delete entry"
-                    >
-                      <MaterialCommunityIcons name="trash-can-outline" size={22} color="#FFFFFF" />
-                      <Text style={styles.swipeDeleteText}>Delete</Text>
-                    </Pressable>
-                  </View>
-                )}
-                rightThreshold={32}
-                overshootRight={false}
-              >
-                <View style={styles.itemRow}>
-                  {/* 항목 터치 시 편집 화면으로 이동 */}
-                  <Pressable
-                    style={{ flex: 1 }}
-                    onPress={() => router.push(`/(tabs)/entry?id=${e.id}`)}
-                  >
-                    <Card style={{ paddingVertical: 16 }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={[styles.itemTitle, { color: berryColor(e.berryType) }]}>{e.berryType}</Text>
-                      <Text style={styles.mono}>
-                        {e.payType === 'piece'
-                          ? (e.pieceUnit === 'punnet'
-                              ? `${e.punnets ?? 0} punnets`
-                              : (e.pieceUnit === 'bucket'
-                                  ? `${e.buckets ?? 0} buckets`
-                                  : `${e.kg ?? 0} kg`))
-                          : `${e.hours ?? 0} hours`}
-                      </Text>
-                      </View>
-                      <Text style={styles.itemSubtitle}>
-                        Gross: {formatCurrencyAUD(r.gross)} | Tax: {formatCurrencyAUD(r.taxAmount)} | Net: {formatCurrencyAUD(r.net)}
-                      </Text>
-                      {!!e.comment && (
-                        <>
-                          <View style={styles.hr} />
-                          <Text style={styles.itemComment}>{e.comment}</Text>
-                        </>
-                      )}
-                    </Card>
-                  </Pressable>
-
-                </View>
-              </Swipeable>
-            );
-          }}
+          ListHeaderComponent={renderHeader}
+          renderItem={renderItem}
         />
       </FadeOnFocus>
     </SafeAreaView>
@@ -356,5 +360,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     marginTop: 8,
     marginBottom: 4,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  brandWrapper: {
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  brandImage: {
+    width: 160,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  entryPressable: {
+    flex: 1,
+  },
+  itemCard: {
+    paddingVertical: 16,
+  },
+  itemHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
