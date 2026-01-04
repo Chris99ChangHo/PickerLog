@@ -1,9 +1,10 @@
 import React from 'react';
-import { Animated, ViewStyle } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
 export const FadeOnFocus: React.FC<{ style?: ViewStyle; children: React.ReactNode }> = ({ style, children }) => {
-  const opacity = React.useRef(new Animated.Value(0)).current;
+  const opacity = React.useMemo(() => new Animated.Value(0), []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -14,8 +15,13 @@ export const FadeOnFocus: React.FC<{ style?: ViewStyle; children: React.ReactNod
     }, [opacity])
   );
 
-  return <Animated.View style={[{ flex: 1, opacity }, style]}>{children}</Animated.View>;
+  return <Animated.View style={[styles.container, { opacity }, style]}>{children}</Animated.View>;
 };
 
-export default FadeOnFocus;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
 
+export default FadeOnFocus;

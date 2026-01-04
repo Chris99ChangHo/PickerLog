@@ -11,7 +11,7 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 import "dayjs/locale/en-au";
 
 import { loadAll, type LogEntry } from "../../src/storage";
-import { computePayV2 } from "../../src/domain";
+import { computePayV2, resolvePieceQuantity } from "../../src/domain";
 import { Card } from "../../src/ui/components";
 import { Button } from '../../src/ui/Button';
 import { colors } from "../../src/ui/theme";
@@ -37,7 +37,7 @@ interface StatRow {
 const formatWeekLabelAU = (isoYear: number, isoWeekNum: number): string => {
   const start = dayjs().year(isoYear).isoWeek(isoWeekNum).startOf('isoWeek');
   const end = dayjs().year(isoYear).isoWeek(isoWeekNum).endOf('isoWeek');
-  return ` - `;
+  return `${start.format('D/MM')}–${end.format('D/MM/YYYY')}`;
 };
 
 // Improved weekly label for display: "D–D MMM YYYY" or "D MMM–D MMM YYYY"
@@ -104,7 +104,12 @@ export default function StatsScreen() {
         taxPercent: entry.taxPercent,
         pieceUnit: entry.pieceUnit,
         quantity: entry.payType === 'piece'
-          ? (entry.pieceUnit === 'punnet' ? entry.punnets : entry.kg)
+          ? resolvePieceQuantity({
+              pieceUnit: entry.pieceUnit,
+              kg: entry.kg,
+              punnets: entry.punnets,
+              buckets: entry.buckets,
+            })
           : undefined,
         hours: entry.hours
       });
@@ -197,7 +202,14 @@ export default function StatsScreen() {
         rate: e.rate,
         taxPercent: e.taxPercent,
         pieceUnit: e.pieceUnit,
-        quantity: e.payType === 'piece' ? (e.pieceUnit === 'punnet' ? e.punnets : (e.pieceUnit === 'bucket' ? (e as any).buckets : e.kg)) : undefined,
+        quantity: e.payType === 'piece'
+          ? resolvePieceQuantity({
+              pieceUnit: e.pieceUnit,
+              kg: e.kg,
+              punnets: e.punnets,
+              buckets: e.buckets,
+            })
+          : undefined,
         hours: e.hours,
       });
       const key = e.berryType || 'Unknown';

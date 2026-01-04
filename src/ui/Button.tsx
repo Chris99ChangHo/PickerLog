@@ -15,8 +15,7 @@ interface ButtonProps {
 }
 
 export const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'solid', disabled = false, style }) => {
-  const currentVariant = disabled ? 'solid' : 'outline';
-  const isSolid = currentVariant === 'solid';
+  const isSolid = variant === 'solid';
 
   return (
     <Pressable
@@ -72,4 +71,3 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
-

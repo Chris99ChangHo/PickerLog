@@ -90,6 +90,6 @@ export async function loadAustralianPostcodes(): Promise<PostcodeRecord[]> {
   return applyEligibility(base);
 }
 
-export async function loadPostcodesFrom(url: string): Promise<PostcodeRecord[]> {
+export async function loadPostcodesFrom(_url: string): Promise<PostcodeRecord[]> {
   throw new Error('Remote loading not configured. Use loadBundledPostcodes().');
 }

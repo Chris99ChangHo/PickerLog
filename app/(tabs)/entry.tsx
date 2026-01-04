@@ -10,7 +10,7 @@ import { computePayV2, type PayType, type PieceUnit } from '../../src/domain';
 import { formatCurrencyAUD } from '../../src/ui/format';
 import { upsert, loadAll, type LogEntry } from '../../src/storage';
 import { Picker } from '@react-native-picker/picker';
-import { Card, Field, H1, SolidCard } from '../../src/ui/components';
+import { Card, Field, SolidCard } from '../../src/ui/components';
 import { Button } from '../../src/ui/Button';
 import { colors } from '../../src/ui/theme';
 import { FadeOnFocus } from '../../src/ui/animations';

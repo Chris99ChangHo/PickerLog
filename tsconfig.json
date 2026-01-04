@@ -20,6 +20,6 @@
 
     "types": ["react", "react-native", "jest"]
   },
-  "include": ["app", "src"],
+  "include": ["app", "src", "index.ts"],
   "exclude": ["node_modules"]
 }

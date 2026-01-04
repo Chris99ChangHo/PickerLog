@@ -49,6 +49,69 @@ function describeDonutSegment(
   ].join(' ');
 }
 
+const buildDonutPaths = (
+  data: DonutSlice[],
+  total: number,
+  cx: number,
+  cy: number,
+  rOuter: number,
+  rInner: number
+) => {
+  let cursor = -90;
+  return data.map((d, i) => {
+    const value = Math.max(0, d.value || 0);
+    const frac = total > 0 ? value / total : 0;
+    const sweep = frac * 360;
+    const start = cursor;
+    const end = start + sweep;
+    cursor = end;
+    if (sweep <= 0) return null;
+    const dPath = describeDonutSegment(cx, cy, rOuter, rInner, start, end);
+    return <Path key={i} d={dPath} fill={d.color} />;
+  });
+};
+
+const buildDonutLabels = (
+  data: DonutSlice[],
+  total: number,
+  cx: number,
+  cy: number,
+  rOuter: number,
+  rInner: number,
+  labelMinPercent: number,
+  labelColor: string,
+  labelFontSize: number
+) => {
+  let cursor = -90;
+  return data.map((d, i) => {
+    const value = Math.max(0, d.value || 0);
+    const frac = total > 0 ? value / total : 0;
+    const pct = Math.round(frac * 100);
+    const sweep = frac * 360;
+    const start = cursor;
+    const end = start + sweep;
+    cursor = end;
+    if (pct < labelMinPercent || sweep <= 0) return null;
+    const mid = start + sweep / 2;
+    const rMid = (rInner + rOuter) / 2;
+    const { x, y } = polarToCartesian(cx, cy, rMid, mid);
+    return (
+      <SvgText
+        key={`label-${i}`}
+        x={x}
+        y={y}
+        fill={labelColor}
+        fontSize={labelFontSize}
+        fontWeight="700"
+        textAnchor="middle"
+        alignmentBaseline="middle"
+      >
+        {`${pct}%`}
+      </SvgText>
+    );
+  });
+};
+
 export const DonutChart: React.FC<DonutChartProps> = ({
   data,
   size = 200,
@@ -68,47 +131,9 @@ export const DonutChart: React.FC<DonutChartProps> = ({
     return <View />;
   }
 
-  let cursor = -90; // start at top (12 o'clock)
-  const paths = data.map((d, i) => {
-    const frac = (Math.max(0, d.value || 0) / total) || 0;
-    const sweep = frac * 360;
-    const start = cursor;
-    const end = cursor + sweep;
-    cursor = end;
-    if (sweep <= 0) return null;
-    const dPath = describeDonutSegment(cx, cy, rOuter, rInner, start, end);
-    return <Path key={i} d={dPath} fill={d.color} />;
-  });
-
-  // Optional percentage labels at arc centroids
-  cursor = -90;
+  const paths = buildDonutPaths(data, total, cx, cy, rOuter, rInner);
   const labels = showPercentLabels
-    ? data.map((d, i) => {
-        const frac = (Math.max(0, d.value || 0) / total) || 0;
-        const pct = Math.round(frac * 100);
-        const sweep = frac * 360;
-        const start = cursor;
-        const end = cursor + sweep;
-        cursor = end;
-        if (pct < labelMinPercent || sweep <= 0) return null;
-        const mid = start + sweep / 2;
-        const rMid = (rInner + rOuter) / 2;
-        const { x, y } = polarToCartesian(cx, cy, rMid, mid);
-        return (
-          <SvgText
-            key={`label-${i}`}
-            x={x}
-            y={y}
-            fill={labelColor}
-            fontSize={labelFontSize}
-            fontWeight="700"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            {`${pct}%`}
-          </SvgText>
-        );
-      })
+    ? buildDonutLabels(data, total, cx, cy, rOuter, rInner, labelMinPercent, labelColor, labelFontSize)
     : null;
 
   return (

@@ -2,7 +2,7 @@
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from "react";
-import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage, Platform } from "react-native";
+import { View, Text, FlatList, Pressable, StyleSheet, Image as RNImage } from "react-native";
 import { Swipeable } from '../../src/ui/Swipeable';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from "expo-router";
@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/en-au";
 
 import { loadAll, remove, type LogEntry } from "../../src/storage";
-import { computePayV2 } from "../../src/domain";
+import { computePayV2, resolvePieceQuantity } from "../../src/domain";
 import { groupByDay, makeMarkedDates } from "../../src/calendarHelpers";
 import { Card, SolidCard } from "../../src/ui/components";
 import { colors } from "../../src/ui/theme";
@@ -22,17 +22,38 @@ import { confirmAsync } from "../../src/ui/confirm";
 // 지역화: en-AU 로케일 사용(표시는 로컬, 내부 값은 ISO 포맷)
 dayjs.locale("en-au");
 
+const berryColor = (name: string) => {
+  const key = (name || "unknown").toLowerCase();
+  if (key.includes("strawberry")) return "#FF5964";
+  if (key.includes("blueberry")) return "#4F7BFF";
+  if (key.includes("raspberry")) return "#FF5FA2";
+  if (key.includes("blackberry")) return "#6A56C8";
+  return colors.brand;
+};
+
 /**
  * 수확/근무 로그를 달력과 리스트로 보여주는 메인 화면입니다.
  */
 export default function CalendarScreen() {
   // --- Hooks & State 정의 ---
   const router = useRouter();
-  const [refreshId, setRefreshId] = React.useState(0);
-  const refreshData = () => setRefreshId(Math.random());
-
   const [all, setAll] = React.useState<LogEntry[]>([]);
   const [selected, setSelected] = React.useState<string>(dayjs().format("YYYY-MM-DD"));
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const loadEntries = React.useCallback(async () => {
+    const entries = await loadAll();
+    setAll(entries);
+  }, []);
+
+  const refreshData = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadEntries();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadEntries]);
 
   // marked 계산: useMemo로 파생 상태를 분리(불필요한 렌더 방지)
   const marked = React.useMemo(
@@ -43,8 +64,8 @@ export default function CalendarScreen() {
   // --- 데이터 로딩 ---
   useFocusEffect(
     React.useCallback(() => {
-      loadAll().then(setAll);
-    }, [refreshId])
+      loadEntries();
+    }, [loadEntries])
   );
 
   // --- 파생 데이터 ---
@@ -59,7 +80,13 @@ export default function CalendarScreen() {
       const r = computePayV2({
         payType: e.payType,
         pieceUnit: e.pieceUnit ?? "kg",
-        quantity: e.payType === "piece" ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.pieceUnit === "bucket" ? ((e as any).buckets || 0) : (e.kg || 0)))
+        quantity: e.payType === "piece"
+          ? resolvePieceQuantity({
+              pieceUnit: e.pieceUnit ?? "kg",
+              kg: e.kg,
+              punnets: e.punnets,
+              buckets: e.buckets,
+            })
           : undefined,
         hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
         rate: e.rate,
@@ -115,6 +142,8 @@ export default function CalendarScreen() {
           contentContainerStyle={styles.listContent}
           data={itemsToday}
           keyExtractor={(e) => e.id}
+          refreshing={refreshing}
+          onRefresh={refreshData}
           ListHeaderComponent={() => (
             <SolidCard>
               {/* 날짜 표시(en-AU): "D/MM/YYYY" (예: 31/12/2025) */}
@@ -133,7 +162,13 @@ export default function CalendarScreen() {
             const r = computePayV2({
               payType: e.payType,
               pieceUnit: e.pieceUnit ?? "kg",
-              quantity: e.payType === "piece" ? (e.pieceUnit === "punnet" ? (e.punnets || 0) : (e.pieceUnit === "bucket" ? ((e as any).buckets || 0) : (e.kg || 0)))
+              quantity: e.payType === "piece"
+                ? resolvePieceQuantity({
+                    pieceUnit: e.pieceUnit ?? "kg",
+                    kg: e.kg,
+                    punnets: e.punnets,
+                    buckets: e.buckets,
+                  })
                 : undefined,
               hours: e.payType === "hourly" ? (e.hours || 0) : undefined,
               rate: e.rate,
@@ -173,7 +208,7 @@ export default function CalendarScreen() {
                           ? (e.pieceUnit === 'punnet'
                               ? `${e.punnets ?? 0} punnets`
                               : (e.pieceUnit === 'bucket'
-                                  ? `${(e as any).buckets ?? 0} buckets`
+                                  ? `${e.buckets ?? 0} buckets`
                                   : `${e.kg ?? 0} kg`))
                           : `${e.hours ?? 0} hours`}
                       </Text>
@@ -323,13 +358,3 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
-
-  // Berry color mapping (match stats for consistency)
-  const berryColor = React.useCallback((name: string) => {
-    const key = (name || 'unknown').toLowerCase();
-    if (key.includes('strawberry')) return '#FF5964';
-    if (key.includes('blueberry')) return '#4F7BFF';
-    if (key.includes('raspberry')) return '#FF5FA2';
-    if (key.includes('blackberry')) return '#6A56C8';
-    return colors.brand;
-  }, []);

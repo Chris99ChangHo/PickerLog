@@ -33,6 +33,21 @@ export interface ComputePayResult {
   net: number;      // ?명썑 ?섏엯 (?ㅼ닔?뱀븸)
 }
 
+export interface PieceQuantityInput {
+  pieceUnit?: PieceUnit;
+  kg?: number | null;
+  punnets?: number | null;
+  buckets?: number | null;
+}
+
+export function resolvePieceQuantity(input: PieceQuantityInput): number {
+  const { pieceUnit, kg = 0, punnets = 0, buckets = 0 } = input;
+  if (pieceUnit === "punnet") return Math.max(0, punnets || 0);
+  if (pieceUnit === "bucket") return Math.max(0, buckets || 0);
+  return Math.max(0, kg || 0);
+}
+
+
 
 // --- ?ы띁 ?⑥닔 ---
 
